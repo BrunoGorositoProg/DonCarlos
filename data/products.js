@@ -4,7 +4,7 @@ const productos = [
     nombre: "Sorrentinos Jamón y Queso",
     precio: 3500,
     imagen: "./assets/Sorrentinos.png",
-    descripcion: "ESPINACA + RICOTA + MOZZARELLA JAMÓN + RICOTA + MOZZARELLA",
+    descripcion: "JAMÓN + RICOTA + MOZZARELLA",
     presentacion: "14 Unidades (Se calculan para 2 adultos)"
   },
   {

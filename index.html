@@ -1,31 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8" />
   <title>Don Carlos</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
 
-  <header>
-    <h1>Don Carlos</h1>
-  </header>
+    <header>
+        <img src="./assets/Logo.png" class="logo" />
+    </header>
 
   <main>
+    
+  <h2 class="subtitulo">🍴¡Llegaron los sorrentinos caseros de Don Carlos!🍴</h2>
+  <P class="texto-especial">¡Listos para cocinar o guardar en el freezer y disfrutar cuando quieras!</P>
     <section id="productos"></section>
+      <!-- SECCIÓN ESPECIAL -->
+  <section class="seccion-especial">
+    <h2 class="subtitulo">🍲 Comida Especial</h2>
+    <p class="texto-especial">Disponible por tiempo limitado</p>
 
-    <section id="carrito">
-      <h2>Carrito</h2>
-      <ul id="lista-carrito"></ul>
+    <div id="productos-especiales"></div>
+  </section>
+  <section class="info-extra">
 
-      <input type="text" id="nombre" placeholder="Tu nombre" />
-      <input type="text" id="telefono" placeholder="Tu teléfono" />
+  <!-- ENTREGA -->
+  <div class="info-box">
+    <h2>📦 Entrega</h2>
+    <p>El retiro se coordina previamente.</p>
+    <p><strong>Dirección:</strong> Salta 127, Rafaela, Central Córdoba.</p>
+  </div>
 
-      <button id="enviarPedido">Enviar pedido por WhatsApp</button>
-    </section>
+  <!-- CÓMO COCINAR -->
+  <div class="info-box">
+    <h2>👩🏻‍🍳 Cómo cocinar</h2>
+
+    <div class="coccion">
+      <h3>Sorrentinos de Calabaza</h3>
+      <p>Retirar del freezer y llevarlos a olla con agua hirviendo durante 6 minutos.</p>
+      <p>Retirar con espumadera.</p>
+    </div>
+
+    <div class="coccion">
+      <h3>Sorrentinos Jamón y Queso</h3>
+      <p>Retirar del freezer y llevarlos a olla con agua hirviendo durante 6 minutos.</p>
+      <p>Retirar con espumadera.</p>
+    </div>
+
+    <div class="coccion">
+      <h3>Sorrentinos de Espinaca</h3>
+      <p>Retirar del freezer y llevarlos a olla con agua hirviendo durante 6 minutos.</p>
+      <p>Retirar con espumadera.</p>
+    </div>
+
+  </div>
+
+</section>
   </main>
 
-  <script src="data/products.js"></script>
-  <script src="app.js"></script>
+  <script src="./data/products.js" defer></script>
+  <script src="./app.js" defer></script>
+
+  <!-- BOTÓN FLOTANTE -->
+<div id="cart-btn">🛒<span id="cart-count">0</span></div>
+
+<!-- PANEL CARRITO -->
+<div id="cart-panel">
+  <div class="cart-header">
+    <h3>Mi carrito</h3>
+    <span id="close-cart">✖</span>
+  </div>
+
+  <div id="cart-items"></div>
+
+  <div class="cart-footer">
+    <p id="subtotal"></p>
+    <button id="enviarPedido">Enviar pedido</button>
+  </div>
+</div>
+
 </body>
 </html>

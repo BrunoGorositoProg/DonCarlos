@@ -1,5 +1,13 @@
 const contenedor = document.getElementById("productos");
-const carritoLista = document.getElementById("lista-carrito");
+const contenedorEspecial = document.getElementById("productos-especiales");
+const cartBtn = document.getElementById("cart-btn");
+const cartPanel = document.getElementById("cart-panel");
+const closeCart = document.getElementById("close-cart");
+const cartItems = document.getElementById("cart-items");
+const subtotalEl = document.getElementById("subtotal");
+
+cartBtn.onclick = () => cartPanel.classList.add("active");
+closeCart.onclick = () => cartPanel.classList.remove("active");
 
 let carrito = [];
 
@@ -10,52 +18,141 @@ productos.forEach(prod => {
 
   div.innerHTML = `
     <img src="${prod.imagen}" />
-    <h3>${prod.nombre}</h3>
-    <p>$${prod.precio}</p>
-    <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>
+    <h3 class="titulo">${prod.nombre}</h3>
+        <p class="desc">${prod.descripcion || ""}</p>
+        <p class="desc">${prod.presentacion || ""}</p>
+    <div class="card-footer">
+      <span class="precio">$${prod.precio}</span>
+      <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>
+    </div>
   `;
 
-  contenedor.appendChild(div);
+  if (prod.especial) {
+    contenedorEspecial.appendChild(div);
+  } else {
+    contenedor.appendChild(div);
+  }
 });
 
 // Agregar al carrito
 function agregarAlCarrito(id) {
   const producto = productos.find(p => p.id === id);
-  carrito.push(producto);
+
+  const existe = carrito.find(p => p.id === id);
+
+  if (existe) {
+    existe.cantidad++;
+  } else {
+    carrito.push({ ...producto, cantidad: 1 });
+  }
+
+  localStorage.setItem("carrito", JSON.stringify(carrito));
   renderCarrito();
+
+  // animación botón
+  cartBtn.classList.add("shake");
+  setTimeout(() => cartBtn.classList.remove("shake"), 300);
+  cartPanel.classList.add("active");
 }
+
+window.agregarAlCarrito = agregarAlCarrito;
+
+// Cargar carrito al iniciar
+window.onload = () => {
+  const data = localStorage.getItem("carrito");
+  if (data) {
+    carrito = JSON.parse(data);
+    renderCarrito();
+  }
+};
 
 // Render carrito
 function renderCarrito() {
-  carritoLista.innerHTML = "";
+  cartItems.innerHTML = "";
 
-  carrito.forEach(p => {
-    const li = document.createElement("li");
-    li.textContent = `${p.nombre} - $${p.precio}`;
-    carritoLista.appendChild(li);
+  let total = 0;
+  let totalItems = 0;
+
+  carrito.forEach((p, index) => {
+    total += p.precio * p.cantidad;
+    totalItems += p.cantidad;
+
+    const div = document.createElement("div");
+    div.classList.add("cart-item");
+
+    div.innerHTML = `
+      <div>
+        <strong>${p.nombre}</strong>
+        <p>$${p.precio} x ${p.cantidad}</p>
+      </div>
+
+      <div>
+        <button onclick="sumar(${index})">+</button>
+        <button onclick="restar(${index})">-</button>
+        <span onclick="eliminar(${index})">❌</span>
+      </div>
+    `;
+
+    cartItems.appendChild(div);
   });
+
+  subtotalEl.textContent = "Total: $" + total;
+
+  document.getElementById("cart-count").textContent = totalItems;
+
+  localStorage.setItem("carrito", JSON.stringify(carrito));
 }
 
-// Enviar a WhatsApp
-document.getElementById("enviarPedido").addEventListener("click", () => {
-  const nombre = document.getElementById("nombre").value;
-  const telefono = document.getElementById("telefono").value;
+function sumar(index) {
+  carrito[index].cantidad++;
+  renderCarrito();
+}
 
-  if (!nombre || !telefono || carrito.length === 0) {
-    alert("Completa los datos y agrega productos");
+function restar(index) {
+  if (carrito[index].cantidad > 1) {
+    carrito[index].cantidad--;
+  } else {
+    carrito.splice(index, 1);
+  }
+  renderCarrito();
+}
+
+function eliminar(index) {
+  carrito.splice(index, 1);
+  renderCarrito();
+}
+
+window.sumar = sumar;
+window.restar = restar;
+window.eliminar = eliminar;
+
+// Enviar a WhatsApp
+document.getElementById("enviarPedido").onclick = () => {
+  if (carrito.length === 0) {
+    alert("El carrito está vacío");
     return;
   }
 
-  let mensaje = `Hola, soy ${nombre}%0A%0APedido:%0A`;
+  let mensaje = "*Don Carlos*%0A%0A🛒 Pedido:%0A";
 
   carrito.forEach(p => {
-    mensaje += `- ${p.nombre}%0A`;
+    mensaje += `• ${p.nombre} x${p.cantidad}%0A`;
   });
 
-  mensaje += `%0ATel: ${telefono}`;
+  const total = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
 
-  const numero = "549XXXXXXXXXX"; // TU NUMERO
-  const url = `https://wa.me/${numero}?text=${mensaje}`;
+  mensaje += `%0A💰 Total: $${total}`;
 
-  window.open(url, "_blank");
-});
+  // 👉 Abrir WhatsApp
+  window.open(`https://wa.me/549XXXXXXXXXX?text=${mensaje}`);
+
+  // 🔥 VACIAR CARRITO
+  carrito = [];
+  localStorage.removeItem("carrito");
+
+  // 🔄 ACTUALIZAR UI
+  renderCarrito();
+
+  // 👉 Cerrar panel (opcional pero queda mejor)
+  cartPanel.classList.remove("active");
+};

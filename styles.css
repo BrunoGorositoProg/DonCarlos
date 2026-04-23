@@ -78,20 +78,20 @@ body {
 header {
   background: #8B0000;
   width: 100%;
+
   display: flex;
   justify-content: center;
   align-items: center;
 
-  padding: 10px 0; /* 👈 controla altura */
-  overflow: hidden; /* 👈 evita que el logo rompa */
+  padding: 8px 0;
 }
-
 .logo {
-  max-width: 250px;   /* 👈 límite en desktop */
   width: 100%;
+  max-width: 220px;
   height: auto;
-}
 
+  display: block;
+}
 /* SUBTITULOS */
 .subtitulo {
   font-size: 22px;
@@ -288,6 +288,9 @@ header {
   }
 }
 @media (max-width: 480px) {
+    .logo {
+    max-width: 140px;
+  }
   #productos,
   #productos-especiales {
     grid-template-columns: 1fr;

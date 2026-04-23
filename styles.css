@@ -11,7 +11,7 @@ body {
 /* CONTENEDOR PRODUCTOS */
 #productos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 280px));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   justify-content: center; /* 👈 clave */
   gap: 25px;
 }
@@ -78,17 +78,20 @@ body {
 header {
   background: #8B0000;
   width: 100%;
-  padding: 5px 0;
   display: flex;
   justify-content: center;
   align-items: center;
+
+  padding: 10px 0; /* 👈 controla altura */
+  overflow: hidden; /* 👈 evita que el logo rompa */
 }
 
 .logo {
-  width: 180px;
-  max-width: 80%;
+  max-width: 250px;   /* 👈 límite en desktop */
+  width: 100%;
   height: auto;
 }
+
 /* SUBTITULOS */
 .subtitulo {
   font-size: 22px;
@@ -274,12 +277,25 @@ header {
 }
 
 @media (max-width: 600px) {
-  #productos {
+  .logo {
+    max-width: 150px; /* 👈 más chico en celular */
+  }
+}
+@media (max-width: 768px) {
+  #productos,
+  #productos-especiales {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  #productos,
+  #productos-especiales {
     grid-template-columns: 1fr;
   }
-
+}
+@media (min-width: 1200px) {
   .logo {
-    height: 50px;
+    max-width: 300px;
   }
 }
 main {

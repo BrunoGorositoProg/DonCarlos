@@ -1,0 +1,184 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial;
+  background: #eef2ef;
+}
+
+/* HEADER */
+.admin-header {
+  background: #1f3d2b;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+  position: relative;
+}
+
+.logo-admin {
+  max-width: 180px;
+  width: 100%;
+}
+
+.back-btn {
+  position: absolute;
+  left: 15px;
+  font-size: 22px;
+  cursor: pointer;
+
+  width: 35px;
+  height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* CONTENEDOR */
+.admin-container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 15px;
+}
+
+/* SECCIONES */
+.section {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.section h2 {
+  margin-bottom: 15px;
+}
+
+/* 🔥 PRODUCTOS (LISTA VERTICAL) */
+#admin-productos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* CARD */
+.prod-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  padding: 12px;
+
+  background: #fff;
+  border-radius: 12px;
+
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+/* IMAGEN */
+.prod-img {
+  width: 65px;
+  height: 65px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* INFO */
+.prod-info {
+  flex: 1;
+}
+
+.prod-info h3 {
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.prod-info p {
+  font-size: 12px;
+  color: #444;
+}
+
+/* PRECIO */
+.prod-precio {
+  font-weight: bold;
+  font-size: 15px;
+  margin-top: 4px;
+}
+
+/* BOTÓN */
+.add-btn {
+  background: #1f3d2b;
+  color: white;
+
+  border: none;
+  padding: 8px 12px;
+
+  border-radius: 20px;
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+.add-btn:hover {
+  background: #2e5c42;
+}
+
+/* VENTA */
+#venta-form {
+  background: #fafafa;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+#venta-form div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+#venta-form strong {
+  display: block;
+  text-align: right;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+/* BOTÓN GENERAR */
+.generar-btn {
+  width: 100%;
+  padding: 12px;
+  background: #1f3d2b;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  margin-top: 10px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .logo-admin {
+    max-width: 140px;
+  }
+
+  .prod-card {
+    gap: 10px;
+  }
+
+  .prod-img {
+    width: 55px;
+    height: 55px;
+  }
+}

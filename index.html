@@ -10,6 +10,7 @@
 
     <header>
         <img src="./assets/Logo.png" class="logo" />
+        <div id="admin-btn">👤</div>
     </header>
 
   <main>
@@ -78,6 +79,21 @@
   <div class="cart-footer">
     <p id="subtotal"></p>
     <button id="enviarPedido">Enviar pedido</button>
+  </div>
+</div>
+
+<!-- Login -->
+<div id="login-modal">
+  <div class="login-card">
+
+    <span id="close-login">✖</span> <!-- 👈 NUEVO -->
+
+    <h2>Admin</h2>
+
+    <input type="text" id="user" placeholder="Usuario" />
+    <input type="password" id="pass" placeholder="Contraseña" />
+
+    <button onclick="login()">Ingresar</button>
   </div>
 </div>
 

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Don Carlos</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+
+<body>
+
+<header class="admin-header">
+  <div class="back-btn" onclick="volver()">←</div>
+  <img src="./assets/Logo.png" class="logo-admin" />
+</header>
+
+<div class="admin-container">
+
+  <div class="section">
+    <h2>Productos</h2>
+    <div id="admin-productos"></div>
+  </div>
+
+  <div class="section">
+    <h2>Generar Venta</h2>
+    <div id="venta-form"></div>
+    <button class="generar-btn" onclick="crearVenta()">Generar Ticket</button>
+  </div>
+
+  <div class="section">
+    <h2>Historial</h2>
+    <div id="historial"></div>
+  </div>
+
+</div>
+
+<script src="./data/db.js"></script>
+<script src="./data/products.js"></script>
+<script src="./admin.js"></script>
+
+</body>
+</html>

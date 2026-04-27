@@ -156,3 +156,35 @@ document.getElementById("enviarPedido").onclick = () => {
   // 👉 Cerrar panel (opcional pero queda mejor)
   cartPanel.classList.remove("active");
 };
+
+//Login
+const adminBtn = document.getElementById("admin-btn");
+const loginModal = document.getElementById("login-modal");
+
+adminBtn.onclick = () => {
+  loginModal.classList.add("active");
+};
+
+function login() {
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
+
+  if (user === "admin" && pass === "a3min$") {
+    window.location.href = "admin.html";
+  } else {
+    alert("Datos incorrectos");
+  }
+}
+const closeLogin = document.getElementById("close-login");
+
+closeLogin.onclick = () => {
+  loginModal.classList.remove("active");
+};
+loginModal.onclick = (e) => {
+  if (e.target === loginModal) {
+    loginModal.classList.remove("active");
+  }
+};
+function volver() {
+  window.location.href = "index.html";
+}

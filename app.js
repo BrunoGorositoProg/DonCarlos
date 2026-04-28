@@ -144,7 +144,7 @@ document.getElementById("enviarPedido").onclick = () => {
   mensaje += `%0A💰 Total: $${total}`;
 
   // 👉 Abrir WhatsApp
-  window.open(`https://wa.me/3492642222?text=${mensaje}`);
+  window.open(`https://wa.me/5493492642222?text=${mensaje}`);
 
   // 🔥 VACIAR CARRITO
   carrito = [];

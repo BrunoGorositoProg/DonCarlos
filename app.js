@@ -133,15 +133,15 @@ document.getElementById("enviarPedido").onclick = () => {
     return;
   }
 
-  let mensaje = "*Don Carlos*%0A%0A🛒 Pedido:%0A";
+  let mensaje = "*Don Carlos*\n\n🛒 Pedido:\n";
 
   carrito.forEach(p => {
-    mensaje += `• ${p.nombre} x${p.cantidad}%0A`;
+    mensaje += `• ${p.nombre} x${p.cantidad}\n`;
   });
 
   const total = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
 
-  mensaje += `%0A💰 Total: $${total}`;
+  mensaje += `\n💰 Total: $${total}`;
 
   // 👉 Abrir WhatsApp
   const url = `https://wa.me/5493492642222?text=${encodeURIComponent(mensaje)}`;

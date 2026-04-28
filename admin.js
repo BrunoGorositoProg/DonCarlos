@@ -28,8 +28,8 @@ function renderAdmin() {
           <input id="desc-${p.id}" value="${p.descripcion || ""}" />
         </div>
 
-        <button class="add-btn" onclick="guardarEdicion(${p.id})">✔</button>
-        <button class="edit-btn" onclick="cancelarEdicion()">✖</button>
+        <button class="add-btn" onclick="guardarEdicion(${p.id})">Guardar</button>
+        <button class="edit-btn" onclick="cancelarEdicion()">Cancelar</button>
       `;
     }
 

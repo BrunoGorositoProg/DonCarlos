@@ -15,5 +15,18 @@ const DB = {
     const ventas = DB.getVentas();
     ventas.push(venta);
     localStorage.setItem("ventas", JSON.stringify(ventas));
-  }
+  },
+
+  saveVentas: (ventas) => {
+    localStorage.setItem("ventas", JSON.stringify(ventas));
+  },
+  getMovimientos: () => {
+    return JSON.parse(localStorage.getItem("movimientos")) || [];
+  },
+
+  saveMovimiento: (mov) => {
+    const movs = DB.getMovimientos();
+    movs.push(mov);
+    localStorage.setItem("movimientos", JSON.stringify(movs));
+  },
 };

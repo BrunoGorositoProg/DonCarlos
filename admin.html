@@ -15,21 +15,48 @@
 
 <div class="admin-container">
 
+  <!-- PRODUCTOS -->
   <div class="section">
     <h2>Productos</h2>
     <div id="admin-productos"></div>
   </div>
 
+  <!-- GENERAR VENTA -->
   <div class="section">
     <h2>Generar Venta</h2>
-    <div id="venta-form"></div>
-    <button class="generar-btn" onclick="crearVenta()">Generar Ticket</button>
+    <button class="generar-btn" onclick="abrirVenta()">Generar Venta</button>
+  <!-- MODAL -->
+  <div id="modal-venta" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modal-title"></h2>
+
+      <div id="modal-productos"></div>
+
+      <button class="add-btn" onclick="accionModal()">
+        Confirmar
+      </button>
+
+      <button class="edit-btn" onclick="cerrarVenta()">
+        Cancelar
+      </button>
+    </div>
   </div>
 
+  <!-- HISTORIAL -->
   <div class="section">
     <h2>Historial</h2>
     <div id="historial"></div>
   </div>
+
+  <div class="section">
+  <h2>Ingresos y Egresos</h2>
+
+  <button class="generar-btn" onclick="abrirMovimiento()">
+    Agregar Movimiento
+  </button>
+
+  <div id="movimientos"></div>
+</div>
 
 </div>
 

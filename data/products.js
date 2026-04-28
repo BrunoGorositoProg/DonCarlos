@@ -31,6 +31,7 @@ const productos = [
   nombre: "Locro",
   precio: 20000,
   imagen: "./assets/Locro.png",
+  descripcion: "Elaborado con carnes de cerdo y vaca bien desgrazados, verduras frescas, condimentos de alta calidad que le aportan un sabor especial",
   especial: true
 }
 ];

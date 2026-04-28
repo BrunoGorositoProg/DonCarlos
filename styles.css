@@ -301,9 +301,11 @@ header {
   flex: 1;
   overflow-y: auto;
   padding: 10px;
+  cursor: pointer;
 }
 
 .cart-item {
+  cursor: pointer;
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;

@@ -9,6 +9,12 @@ body {
   background: #eef2ef;
 }
 
+/* 🧠 Mejora global */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
 /* HEADER */
 .admin-header {
   background: #1f3d2b;
@@ -238,9 +244,10 @@ body {
 }
 
 /* INPUTS */
+.modal select,
 .modal input {
   width: 100%;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   padding: 8px;
   border-radius: 8px;
   border: 1px solid #ccc;
@@ -264,18 +271,7 @@ body {
   }
 }
 
-/* RESPONSIVE */
-@media (max-width: 600px) {
-  .logo-admin {
-    max-width: 140px;
-  }
-
-  .prod-img {
-    width: 55px;
-    height: 55px;
-  }
-}
-/* 🧾 ITEMS DE VENTA */
+/* ITEMS */
 .venta-item {
   display: flex;
   justify-content: space-between;
@@ -283,7 +279,6 @@ body {
   font-size: 14px;
 }
 
-/* 💰 TOTAL */
 .venta-total {
   margin-top: 10px;
   font-size: 18px;
@@ -292,27 +287,18 @@ body {
   color: #1f3d2b;
 }
 
-/* SEPARADOR */
-.modal hr {
-  margin: 10px 0;
-  border: none;
-  border-top: 1px solid #ddd;
-}
+/* BOTÓN ELIMINAR */
 .delete-btn {
   background: #b02a2a;
   color: white;
   border: none;
-
   width: 35px;
   height: 35px;
-
   border-radius: 50%;
   font-size: 18px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   cursor: pointer;
   transition: 0.2s;
 }
@@ -321,24 +307,106 @@ body {
   background: #d63c3c;
   transform: scale(1.1);
 }
-/* 💰 INGRESO */
+
+/* INGRESO / EGRESO */
 .ingreso {
   background: #e6f4ea;
   border-left: 6px solid #2e7d32;
 }
 
-/* 💸 EGRESO */
 .egreso {
   background: #fdecea;
   border-left: 6px solid #c62828;
 }
 
-/* SELECT + INPUT MODAL */
-.modal select,
-.modal input {
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+/* 📱 RESPONSIVE REAL */
+@media (max-width: 600px) {
+
+  html {
+    font-size: 105%;
+  }
+
+  .admin-container {
+    padding: 10px;
+    margin: 10px;
+  }
+
+  .logo-admin {
+    max-width: 120px;
+  }
+
+  .back-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+  }
+
+  /* CARDS en vertical */
+  .prod-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .prod-img {
+    width: 100%;
+    height: 140px;
+  }
+
+  .prod-info h3 {
+    font-size: 18px;
+  }
+
+  .prod-info p {
+    font-size: 14px;
+  }
+
+  .prod-precio {
+    font-size: 18px;
+  }
+
+  /* BOTONES grandes */
+  .add-btn,
+  .edit-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  .generar-btn {
+    padding: 16px;
+    font-size: 17px;
+  }
+
+  .delete-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+  }
+
+  .modal-body .prod-card button {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  button {
+    min-height: 44px;
+  }
+
+  /* FORM */
+  #venta-form div {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #venta-form strong {
+    text-align: left;
+  }
+
+  /* MODAL */
+  .modal-content {
+    padding: 15px;
+    border-radius: 14px;
+  }
 }

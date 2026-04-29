@@ -83,6 +83,9 @@ function guardarEdicion(id) {
 
   DB.saveProductos(productosDB);
 
+  // 🔥 ESTA LÍNEA ES CLAVE
+  productosDB = DB.getProductos();
+
   editandoId = null;
   renderAdmin();
 }

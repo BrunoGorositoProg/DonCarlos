@@ -1,5 +1,6 @@
 const contenedor = document.getElementById("productos");
 const contenedorEspecial = document.getElementById("productos-especiales");
+
 const cartBtn = document.getElementById("cart-btn");
 const cartPanel = document.getElementById("cart-panel");
 const closeCart = document.getElementById("close-cart");
@@ -11,32 +12,41 @@ closeCart.onclick = () => cartPanel.classList.remove("active");
 
 let carrito = [];
 
-// Render productos
-productos.forEach(prod => {
-  const div = document.createElement("div");
-  div.classList.add("card");
+// 🔥 USAR DB
+let productosDB = DB.getProductos();
 
-  div.innerHTML = `
-    <img src="${prod.imagen}" />
-    <h3 class="titulo">${prod.nombre}</h3>
-        <p class="desc">${prod.descripcion || ""}</p>
-        <p class="desc">${prod.presentacion || ""}</p>
-    <div class="card-footer">
-      <span class="precio">$${prod.precio}</span>
-      <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>
-    </div>
-  `;
+function renderProductos() {
+  productosDB = DB.getProductos(); // 🔥 siempre actualizado
 
-  if (prod.especial) {
-    contenedorEspecial.appendChild(div);
-  } else {
-    contenedor.appendChild(div);
-  }
-});
+  contenedor.innerHTML = "";
+  contenedorEspecial.innerHTML = "";
 
-// Agregar al carrito
+  productosDB.forEach(prod => {
+    const div = document.createElement("div");
+    div.classList.add("card");
+
+    div.innerHTML = `
+      <img src="${prod.imagen}" />
+      <h3 class="titulo">${prod.nombre}</h3>
+      <p class="desc">${prod.descripcion || ""}</p>
+      <p class="desc">${prod.presentacion || ""}</p>
+      <div class="card-footer">
+        <span class="precio">$${prod.precio}</span>
+        <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>
+      </div>
+    `;
+
+    if (prod.especial) {
+      contenedorEspecial.appendChild(div);
+    } else {
+      contenedor.appendChild(div);
+    }
+  });
+}
+
+// 🛒 Agregar al carrito
 function agregarAlCarrito(id) {
-  const producto = productos.find(p => p.id === id);
+  const producto = productosDB.find(p => p.id === id);
 
   const existe = carrito.find(p => p.id === id);
 
@@ -49,7 +59,6 @@ function agregarAlCarrito(id) {
   localStorage.setItem("carrito", JSON.stringify(carrito));
   renderCarrito();
 
-  // animación botón
   cartBtn.classList.add("shake");
   setTimeout(() => cartBtn.classList.remove("shake"), 300);
   cartPanel.classList.add("active");
@@ -57,16 +66,19 @@ function agregarAlCarrito(id) {
 
 window.agregarAlCarrito = agregarAlCarrito;
 
-// Cargar carrito al iniciar
+// 🔥 INIT
 window.onload = () => {
   const data = localStorage.getItem("carrito");
+
   if (data) {
     carrito = JSON.parse(data);
-    renderCarrito();
   }
+
+  renderCarrito();
+  renderProductos(); // 🔥 clave
 };
 
-// Render carrito
+// 🛒 Render carrito
 function renderCarrito() {
   cartItems.innerHTML = "";
 
@@ -97,7 +109,6 @@ function renderCarrito() {
   });
 
   subtotalEl.textContent = "Total: $" + total;
-
   document.getElementById("cart-count").textContent = totalItems;
 
   localStorage.setItem("carrito", JSON.stringify(carrito));
@@ -126,7 +137,7 @@ window.sumar = sumar;
 window.restar = restar;
 window.eliminar = eliminar;
 
-// Enviar a WhatsApp
+// 📲 WhatsApp
 document.getElementById("enviarPedido").onclick = () => {
   if (carrito.length === 0) {
     alert("El carrito está vacío");
@@ -143,27 +154,21 @@ document.getElementById("enviarPedido").onclick = () => {
 
   mensaje += `\n💰 Total: $${total}`;
 
-  // 👉 Abrir WhatsApp
   const url = `https://wa.me/5493492642222?text=${encodeURIComponent(mensaje)}`;
   window.open(url);
-  // 🔥 VACIAR CARRITO
+
   carrito = [];
   localStorage.removeItem("carrito");
 
-  // 🔄 ACTUALIZAR UI
   renderCarrito();
-
-  // 👉 Cerrar panel (opcional pero queda mejor)
   cartPanel.classList.remove("active");
 };
 
-//Login
+// 🔐 Login (igual que antes)
 const adminBtn = document.getElementById("admin-btn");
 const loginModal = document.getElementById("login-modal");
 
-adminBtn.onclick = () => {
-  loginModal.classList.add("active");
-};
+adminBtn.onclick = () => loginModal.classList.add("active");
 
 function login() {
   const user = document.getElementById("user").value;
@@ -175,16 +180,17 @@ function login() {
     alert("Datos incorrectos");
   }
 }
+
 const closeLogin = document.getElementById("close-login");
 
-closeLogin.onclick = () => {
-  loginModal.classList.remove("active");
-};
+closeLogin.onclick = () => loginModal.classList.remove("active");
+
 loginModal.onclick = (e) => {
   if (e.target === loginModal) {
     loginModal.classList.remove("active");
   }
 };
+
 function volver() {
   window.location.href = "index.html";
 }

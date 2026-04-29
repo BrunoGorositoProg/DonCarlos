@@ -1,393 +1,187 @@
-let productosDB = DB.getProductos();
-let ventaActual = [];
-let ventaTemp = [];
-let editandoId = null;
-let modoModal = "";
+const contenedor = document.getElementById("productos");
+const contenedorEspecial = document.getElementById("productos-especiales");
+const cartBtn = document.getElementById("cart-btn");
+const cartPanel = document.getElementById("cart-panel");
+const closeCart = document.getElementById("close-cart");
+const cartItems = document.getElementById("cart-items");
+const subtotalEl = document.getElementById("subtotal");
 
-/* =========================
-   🟢 PRODUCTOS (ADMIN)
-========================= */
+cartBtn.onclick = () => cartPanel.classList.add("active");
+closeCart.onclick = () => cartPanel.classList.remove("active");
 
-function renderAdmin() {
-  const cont = document.getElementById("admin-productos");
-  cont.innerHTML = "";
+let carrito = [];
 
-  productosDB.forEach(p => {
-    const div = document.createElement("div");
-    div.classList.add("prod-card");
+// 🔥 PRODUCTOS DIRECTO (como antes)
+productos.forEach(prod => {
+  const div = document.createElement("div");
+  div.classList.add("card");
 
-    // ✏️ MODO EDICIÓN INLINE
-    if (editandoId === p.id) {
-      div.innerHTML = `
-        <img src="${p.imagen}" class="prod-img" />
-
-        <div class="prod-info">
-          <input id="nombre-${p.id}" value="${p.nombre}" />
-          <input id="precio-${p.id}" type="number" value="${p.precio}" />
-          <input id="stock-${p.id}" type="number" value="${p.stock ?? ""}" placeholder="Sin límite"/>
-          <input id="desc-${p.id}" value="${p.descripcion || ""}" />
-        </div>
-
-        <button class="add-btn" onclick="guardarEdicion(${p.id})">Guardar</button>
-        <button class="edit-btn" onclick="cancelarEdicion()">Cancelar</button>
-      `;
-    }
-
-    // 👀 VISTA NORMAL
-    else {
-      div.innerHTML = `
-        <img src="${p.imagen}" class="prod-img" />
-
-        <div class="prod-info">
-          <h3>${p.nombre}</h3>
-          <p>${p.descripcion || ""}</p>
-          <p class="prod-precio">$${p.precio}</p>
-
-          ${
-            p.stock !== undefined
-              ? `<p>Stock: ${p.stock}</p>`
-              : `<p>♾ Sin límite</p>`
-          }
-        </div>
-
-        <button class="edit-btn" onclick="activarEdicion(${p.id})">
-          Modificar
-        </button>
-      `;
-    }
-
-    cont.appendChild(div);
-  });
-}
-
-function activarEdicion(id) {
-  editandoId = id;
-  renderAdmin();
-}
-
-function cancelarEdicion() {
-  editandoId = null;
-  renderAdmin();
-}
-
-function guardarEdicion(id) {
-  const prod = productosDB.find(p => p.id === id);
-
-  prod.nombre = document.getElementById(`nombre-${id}`).value;
-  prod.precio = parseFloat(document.getElementById(`precio-${id}`).value);
-
-  const stockVal = document.getElementById(`stock-${id}`).value;
-  prod.stock = stockVal ? parseInt(stockVal) : undefined;
-
-  prod.descripcion = document.getElementById(`desc-${id}`).value;
-
-  DB.saveProductos(productosDB);
-
-  editandoId = null;
-  renderAdmin();
-}
-function abrirMovimiento() {
-  modoModal = "movimiento";
-
-  const modal = document.getElementById("modal-venta");
-  const cont = document.getElementById("modal-productos");
-
-  modal.classList.remove("hidden");
-  document.getElementById("modal-title").textContent = "Nuevo Movimiento";
-
-  cont.innerHTML = `
-    <select id="tipo-mov">
-      <option value="ingreso">Ingreso</option>
-      <option value="egreso">Egreso</option>
-    </select>
-
-    <input id="monto-mov" type="number" placeholder="Monto" />
-    <input id="desc-mov" placeholder="Descripción" />
-  `;
-}
-
-/* =========================
-   🧾 VENTA (MODAL)
-========================= */
-
-function abrirVenta() {
-  modoModal = "venta";
-  ventaTemp = [];
-
-  const modal = document.getElementById("modal-venta");
-  const cont = document.getElementById("modal-productos");
-
-  modal.classList.remove("hidden");
-  document.getElementById("modal-title").textContent = "Nueva Venta";
-
-  cont.innerHTML = `
-    <div id="lista-venta"></div>
-    <div id="resumen-venta"></div>
-    <hr/>
-  `;
-
-  productosDB.forEach(p => {
-    const div = document.createElement("div");
-    div.classList.add("prod-card");
-
-    div.innerHTML = `
-      <img src="${p.imagen}" class="prod-img"/>
-
-      <div class="prod-info">
-        <strong>${p.nombre}</strong>
-        <p>$${p.precio}</p>
-      </div>
-
-      <button class="add-btn" onclick="agregarProducto(${p.id})">+</button>
-    `;
-
-    cont.appendChild(div);
-  });
-
-  renderVentaModal();
-}
-function renderVentaModal() {
-  const lista = document.getElementById("lista-venta");
-  const resumen = document.getElementById("resumen-venta");
-
-  lista.innerHTML = "";
-  let total = 0;
-
-  ventaTemp.forEach(p => {
-    const subtotal = p.precio * p.cantidad;
-    total += subtotal;
-
-    const div = document.createElement("div");
-    div.classList.add("venta-item");
-
-    div.innerHTML = `
-      <span>${p.nombre} x${p.cantidad}</span>
-      <strong>$${subtotal}</strong>
-    `;
-
-    lista.appendChild(div);
-  });
-
-  resumen.innerHTML = `
-    <div class="venta-total">
-      Total: $${total}
+  div.innerHTML = `
+    <img src="${prod.imagen}" />
+    <h3 class="titulo">${prod.nombre}</h3>
+    <p class="desc">${prod.descripcion || ""}</p>
+    <p class="desc">${prod.presentacion || ""}</p>
+    <div class="card-footer">
+      <span class="precio">$${prod.precio}</span>
+      <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>
     </div>
   `;
-}
 
-function cerrarVenta() {
-  document.getElementById("modal-venta").classList.add("hidden");
-}
+  if (prod.especial) {
+    contenedorEspecial.appendChild(div);
+  } else {
+    contenedor.appendChild(div);
+  }
+});
 
-/* ➕ Agregar producto a venta */
-function agregarProducto(id) {
-  const prod = productosDB.find(p => p.id === id);
+// 🛒 Agregar al carrito
+function agregarAlCarrito(id) {
+  const producto = productos.find(p => p.id === id);
 
-  const existe = ventaTemp.find(p => p.id === id);
+  const existe = carrito.find(p => p.id === id);
 
   if (existe) {
     existe.cantidad++;
   } else {
-    ventaTemp.push({ ...prod, cantidad: 1 });
+    carrito.push({ ...producto, cantidad: 1 });
   }
 
-  renderVentaModal(); // 🔥 clave
+  localStorage.setItem("carrito", JSON.stringify(carrito));
+  renderCarrito();
+
+  cartBtn.classList.add("shake");
+  setTimeout(() => cartBtn.classList.remove("shake"), 300);
+  cartPanel.classList.add("active");
 }
 
-/* ✅ Confirmar venta */
-function accionModal() {
+window.agregarAlCarrito = agregarAlCarrito;
 
-  /* =========================
-     🧾 VENTA (FACTURA)
-  ========================= */
-  if (modoModal === "venta") {
-
-    if (ventaTemp.length === 0) {
-      alert("No hay productos");
-      return;
-    }
-
-    if (!confirm("¿Confirmar factura?")) return;
-
-    let total = 0;
-
-    ventaTemp.forEach(v => {
-      const prod = productosDB.find(p => p.id === v.id);
-
-      if (prod.stock !== undefined) {
-        prod.stock -= v.cantidad;
-      }
-
-      total += v.precio * v.cantidad;
-    });
-
-    DB.saveProductos(productosDB);
-
-    // 🧾 guardar factura
-    const idVenta = Date.now();
-
-    DB.saveVenta({
-      id: idVenta,
-      fecha: new Date(),
-      items: ventaTemp,
-      total
-    });
-
-    // 💰 guardar ingreso automático
-    DB.saveMovimiento({
-      tipo: "ingreso",
-      monto: total,
-      descripcion: "Venta",
-      fecha: new Date(),
-      idVenta: idVenta // 🔥 clave
-});
-
-    renderHistorial();
-    renderMovimientos(); // 🔥 IMPORTANTE (te faltaba)
-    renderAdmin();
-
-    alert("Factura creada");
+// 🔥 INIT
+window.onload = () => {
+  const data = localStorage.getItem("carrito");
+  if (data) {
+    carrito = JSON.parse(data);
+    renderCarrito();
   }
+};
 
-  /* =========================
-     💰 MOVIMIENTO MANUAL
-  ========================= */
-  if (modoModal === "movimiento") {
+// 🛒 Render carrito
+function renderCarrito() {
+  cartItems.innerHTML = "";
 
-    const tipo = document.getElementById("tipo-mov").value;
-    const monto = parseFloat(document.getElementById("monto-mov").value);
-    const desc = document.getElementById("desc-mov").value;
+  let total = 0;
+  let totalItems = 0;
 
-    if (!monto || !desc) {
-      alert("Completar datos");
-      return;
-    }
+  carrito.forEach((p, index) => {
+    total += p.precio * p.cantidad;
+    totalItems += p.cantidad;
 
-    if (!confirm("¿Confirmar movimiento?")) return;
-
-    DB.saveMovimiento({
-      tipo,
-      monto,
-      descripcion: desc,
-      fecha: new Date()
-    });
-
-    renderMovimientos();
-
-    alert("Movimiento agregado");
-  }
-
-  cerrarVenta();
-}
-
-/* =========================
-   📜 HISTORIAL
-========================= */
-
-function renderHistorial() {
-  const cont = document.getElementById("historial");
-  cont.innerHTML = "";
-
-  const ventas = DB.getVentas();
-
-  ventas.forEach((v, i) => {
     const div = document.createElement("div");
-    div.classList.add("prod-card");
-
-    let items = v.items.map(p => `${p.nombre} x${p.cantidad}`).join(", ");
+    div.classList.add("cart-item");
 
     div.innerHTML = `
-      <div class="prod-info">
-        <h3>Factura #${i + 1}</h3>
-        <p>${items}</p>
-        <p class="prod-precio">Total: $${v.total}</p>
+      <div>
+        <strong>${p.nombre}</strong>
+        <p>$${p.precio} x ${p.cantidad}</p>
       </div>
 
-      <!-- 🔥 BOTÓN ELIMINAR -->
-      <button class="delete-btn" onclick="eliminarVenta(${i})">-</button>
-    `;
-
-    cont.appendChild(div);
-  });
-}
-function eliminarVenta(index) {
-  if (!confirm("¿Eliminar esta factura?")) return;
-
-  let ventas = DB.getVentas();
-  let movs = DB.getMovimientos();
-
-  const venta = ventas[index];
-
-  // 🔥 eliminar ingreso asociado (si existe)
-  movs = movs.filter(m => {
-    // si tiene idVenta lo usa
-    if (m.idVenta) return m.idVenta !== venta.id;
-
-    // fallback (ventas viejas sin id)
-    if (m.descripcion === "Venta" && m.monto === venta.total) {
-      return false;
-    }
-
-    return true;
-  });
-
-  // 🔥 guardar movimientos
-  localStorage.setItem("movimientos", JSON.stringify(movs));
-
-  // 🔥 eliminar venta
-  ventas.splice(index, 1);
-  localStorage.setItem("ventas", JSON.stringify(ventas));
-
-  renderHistorial();
-  renderMovimientos();
-  renderAdmin();
-} 
-function renderMovimientos() {
-  const cont = document.getElementById("movimientos");
-  cont.innerHTML = "";
-
-  const movs = DB.getMovimientos();
-
-  movs.forEach((m, i) => {
-    const div = document.createElement("div");
-    div.classList.add("prod-card");
-
-    // 🎨 color según tipo
-    div.classList.add(m.tipo === "ingreso" ? "ingreso" : "egreso");
-
-    div.innerHTML = `
-      <div class="prod-info">
-        <h3>${m.tipo === "ingreso" ? "Ingreso" : "Egreso"}</h3>
-        <p>${m.descripcion}</p>
-        <p class="prod-precio">$${m.monto}</p>
+      <div>
+        <button onclick="sumar(${index})">+</button>
+        <button onclick="restar(${index})">-</button>
+        <span onclick="eliminar(${index})">❌</span>
       </div>
-
-      <!-- 🔥 BOTÓN ELIMINAR -->
-      <button class="delete-btn" onclick="eliminarMovimiento(${i})">-</button>
     `;
 
-    cont.appendChild(div);
+    cartItems.appendChild(div);
   });
+
+  subtotalEl.textContent = "Total: $" + total;
+  document.getElementById("cart-count").textContent = totalItems;
+
+  localStorage.setItem("carrito", JSON.stringify(carrito));
 }
-function eliminarMovimiento(index) {
-  if (!confirm("¿Eliminar este movimiento?")) return;
 
-  let movs = DB.getMovimientos();
-
-  movs.splice(index, 1);
-
-  // 🔥 guardar directo (seguro)
-  localStorage.setItem("movimientos", JSON.stringify(movs));
-
-  renderMovimientos();
+function sumar(index) {
+  carrito[index].cantidad++;
+  renderCarrito();
 }
+
+function restar(index) {
+  if (carrito[index].cantidad > 1) {
+    carrito[index].cantidad--;
+  } else {
+    carrito.splice(index, 1);
+  }
+  renderCarrito();
+}
+
+function eliminar(index) {
+  carrito.splice(index, 1);
+  renderCarrito();
+}
+
+window.sumar = sumar;
+window.restar = restar;
+window.eliminar = eliminar;
+
+// 📲 WhatsApp
+document.getElementById("enviarPedido").onclick = () => {
+  if (carrito.length === 0) {
+    alert("El carrito está vacío");
+    return;
+  }
+
+  let mensaje = "*Don Carlos*\n\n🛒 Pedido:\n";
+
+  carrito.forEach(p => {
+    mensaje += `• ${p.nombre} x${p.cantidad}\n`;
+  });
+
+  const total = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+
+  mensaje += `\n💰 Total: $${total}`;
+
+  const url = `https://wa.me/5493492642222?text=${encodeURIComponent(mensaje)}`;
+  window.open(url);
+
+  carrito = [];
+  localStorage.removeItem("carrito");
+
+  renderCarrito();
+  cartPanel.classList.remove("active");
+};
+
+// 🔐 Login
+const adminBtn = document.getElementById("admin-btn");
+const loginModal = document.getElementById("login-modal");
+
+adminBtn.onclick = () => {
+  loginModal.classList.add("active");
+};
+
+function login() {
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
+
+  if (user === "admin" && pass === "a3min$") {
+    window.location.href = "admin.html";
+  } else {
+    alert("Datos incorrectos");
+  }
+}
+
+const closeLogin = document.getElementById("close-login");
+
+closeLogin.onclick = () => {
+  loginModal.classList.remove("active");
+};
+
+loginModal.onclick = (e) => {
+  if (e.target === loginModal) {
+    loginModal.classList.remove("active");
+  }
+};
+
 function volver() {
   window.location.href = "index.html";
 }
-
-/* =========================
-   🚀 INIT
-========================= */
-
-renderAdmin();
-renderHistorial();

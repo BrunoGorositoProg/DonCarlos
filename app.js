@@ -11,32 +11,38 @@ closeCart.onclick = () => cartPanel.classList.remove("active");
 
 let carrito = [];
 
-// 🔥 PRODUCTOS DIRECTO (como antes)
-productos.forEach(prod => {
-  const div = document.createElement("div");
-  div.classList.add("card");
+function renderProductos() {
+  productosDB = DB.getProductos(); // 🔥 siempre actualizado
 
-  div.innerHTML = `
-    <img src="${prod.imagen}" />
-    <h3 class="titulo">${prod.nombre}</h3>
-    <p class="desc">${prod.descripcion || ""}</p>
-    <p class="desc">${prod.presentacion || ""}</p>
-    <div class="card-footer">
-      <span class="precio">$${prod.precio}</span>
-      <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>
-    </div>
-  `;
+  contenedor.innerHTML = "";
+  contenedorEspecial.innerHTML = "";
 
-  if (prod.especial) {
-    contenedorEspecial.appendChild(div);
-  } else {
-    contenedor.appendChild(div);
-  }
-});
+  productosDB.forEach(prod => {
+    const div = document.createElement("div");
+    div.classList.add("card");
+
+    div.innerHTML = `
+      <img src="${prod.imagen}" />
+      <h3 class="titulo">${prod.nombre}</h3>
+      <p class="desc">${prod.descripcion || ""}</p>
+      <p class="desc">${prod.presentacion || ""}</p>
+      <div class="card-footer">
+        <span class="precio">$${prod.precio}</span>
+        <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>
+      </div>
+    `;
+
+    if (prod.especial) {
+      contenedorEspecial.appendChild(div);
+    } else {
+      contenedor.appendChild(div);
+    }
+  });
+}
 
 // 🛒 Agregar al carrito
 function agregarAlCarrito(id) {
-  const producto = productos.find(p => p.id === id);
+  const producto = productosDB.find(p => p.id === id);
 
   const existe = carrito.find(p => p.id === id);
 
@@ -58,13 +64,15 @@ window.agregarAlCarrito = agregarAlCarrito;
 
 // 🔥 INIT
 window.onload = () => {
-  const data = localStorage.getItem("carrito");
-  if (data) {
-    carrito = JSON.parse(data);
-    renderCarrito();
-  }
-};
+  const cartBtn = document.getElementById("cart-btn");
+  const cartPanel = document.getElementById("cart-panel");
+  const closeCart = document.getElementById("close-cart");
 
+  cartBtn.onclick = () => cartPanel.classList.add("active");
+  closeCart.onclick = () => cartPanel.classList.remove("active");
+
+  renderProductos();
+};
 // 🛒 Render carrito
 function renderCarrito() {
   cartItems.innerHTML = "";

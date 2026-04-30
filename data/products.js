@@ -2,7 +2,7 @@ const productos = [
   {
     id: 1,
     nombre: "Sorrentinos Jamón y Queso",
-    precio: 3500,
+    precio: 16000,
     stock: 10,
     imagen: "./assets/Sorrentinos.png",
     descripcion: "JAMÓN + RICOTA + MOZZARELLA",
@@ -11,7 +11,7 @@ const productos = [
   {
     id: 2,
     nombre: "Sorrentinos Espinaca",
-    precio: 3500,
+    precio: 16000,
     stock: 10,
     imagen: "./assets/Sorrentinos.png",
     descripcion: "ESPINACA + RICOTA + MOZZARELLA",
@@ -20,7 +20,7 @@ const productos = [
   {
     id: 3,
     nombre: "Sorrentinos Calabaza",
-    precio: 4000,
+    precio: 16000,
     stock: 10,
     imagen: "./assets/Sorrentinos.png",
     descripcion: "CALABAZA + MOZZARELLA",

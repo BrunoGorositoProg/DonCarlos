@@ -167,11 +167,21 @@ adminBtn.onclick = () => {
   loginModal.classList.add("active");
 };
 
-function login() {
+async function login() {
   const user = document.getElementById("user").value;
   const pass = document.getElementById("pass").value;
 
-  if (user === "admin" && pass === "a3min$") {
+  const res = await fetch("/api/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ user, pass })
+  });
+
+  const data = await res.json();
+
+  if (data.ok) {
     window.location.href = "admin.html";
   } else {
     alert("Datos incorrectos");

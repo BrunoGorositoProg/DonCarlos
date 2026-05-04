@@ -5,12 +5,21 @@ let editandoId = null;
 let modoModal = "";
 
 /* =========================
+   🚀 INIT
+========================= */
+cargarProductos();
+renderHistorial();
+renderMovimientos();
+
+/* =========================
    🟢 PRODUCTOS (ADMIN)
 ========================= */
+
 async function cargarProductos() {
   productosDB = await DB.getProductos();
   renderAdmin();
 }
+
 function renderAdmin() {
   const cont = document.getElementById("admin-productos");
   cont.innerHTML = "";
@@ -19,7 +28,6 @@ function renderAdmin() {
     const div = document.createElement("div");
     div.classList.add("prod-card");
 
-    // ✏️ MODO EDICIÓN INLINE
     if (editandoId === p.id) {
       div.innerHTML = `
         <img src="${p.imagen}" class="prod-img" />
@@ -34,10 +42,7 @@ function renderAdmin() {
         <button class="add-btn" onclick="guardarEdicion(${p.id})">Guardar</button>
         <button class="edit-btn" onclick="cancelarEdicion()">Cancelar</button>
       `;
-    }
-
-    // 👀 VISTA NORMAL
-    else {
+    } else {
       div.innerHTML = `
         <img src="${p.imagen}" class="prod-img" />
 
@@ -45,12 +50,7 @@ function renderAdmin() {
           <h3>${p.nombre}</h3>
           <p>${p.descripcion || ""}</p>
           <p class="prod-precio">$${p.precio}</p>
-
-          ${
-            p.stock !== undefined
-              ? `<p>Stock: ${p.stock}</p>`
-              : `<p>♾ Sin límite</p>`
-          }
+          ${p.stock !== undefined ? `<p>Stock: ${p.stock}</p>` : `<p>♾ Sin límite</p>`}
         </div>
 
         <button class="edit-btn" onclick="activarEdicion(${p.id})">
@@ -73,6 +73,10 @@ function cancelarEdicion() {
   renderAdmin();
 }
 
+/* =========================
+   💾 GUARDAR EDICIÓN (FIX REAL)
+========================= */
+
 async function guardarEdicion(id) {
   const prod = productosDB.find(p => p.id === id);
 
@@ -80,131 +84,41 @@ async function guardarEdicion(id) {
   prod.precio = parseFloat(document.getElementById(`precio-${id}`).value);
 
   const stockVal = document.getElementById(`stock-${id}`).value;
-  prod.stock = stockVal ? parseInt(stockVal) : null;
+  if (stockVal !== "") {
+    prod.stock = parseInt(stockVal);
+  }
 
   prod.descripcion = document.getElementById(`desc-${id}`).value;
 
-  await DB.saveProductos([prod]);
+  console.log("PRODUCTO A GUARDAR:", prod);
 
-  productosDB = await DB.getProductos();
+  const { error } = await supabaseClient
+    .from("productos")
+    .update({
+      nombre: prod.nombre,
+      precio: prod.precio,
+      stock: prod.stock,
+      descripcion: prod.descripcion
+    })
+    .eq("id", prod.id);
+
+  if (error) {
+    console.error("ERROR UPDATE:", error);
+    return;
+  }
+
+  await cargarProductos();
 
   editandoId = null;
   renderAdmin();
 }
-function abrirMovimiento() {
-  modoModal = "movimiento";
-
-  const modal = document.getElementById("modal-venta");
-  const cont = document.getElementById("modal-productos");
-
-  modal.classList.remove("hidden");
-  document.getElementById("modal-title").textContent = "Nuevo Movimiento";
-
-  cont.innerHTML = `
-    <select id="tipo-mov">
-      <option value="ingreso">Ingreso</option>
-      <option value="egreso">Egreso</option>
-    </select>
-
-    <input id="monto-mov" type="number" placeholder="Monto" />
-    <input id="desc-mov" placeholder="Descripción" />
-  `;
-}
 
 /* =========================
-   🧾 VENTA (MODAL)
+   🧾 VENTAS (GLOBAL FIX STOCK)
 ========================= */
 
-function abrirVenta() {
-  modoModal = "venta";
-  ventaTemp = [];
+async function accionModal() {
 
-  const modal = document.getElementById("modal-venta");
-  const cont = document.getElementById("modal-productos");
-
-  modal.classList.remove("hidden");
-  document.getElementById("modal-title").textContent = "Nueva Venta";
-
-  cont.innerHTML = `
-    <div id="lista-venta"></div>
-    <div id="resumen-venta"></div>
-    <hr/>
-  `;
-
-  productosDB.forEach(p => {
-    const div = document.createElement("div");
-    div.classList.add("prod-card");
-
-    div.innerHTML = `
-      <img src="${p.imagen}" class="prod-img"/>
-
-      <div class="prod-info">
-        <strong>${p.nombre}</strong>
-        <p>$${p.precio}</p>
-      </div>
-
-      <button class="add-btn" onclick="agregarProducto(${p.id})">+</button>
-    `;
-
-    cont.appendChild(div);
-  });
-
-  renderVentaModal();
-}
-function renderVentaModal() {
-  const lista = document.getElementById("lista-venta");
-  const resumen = document.getElementById("resumen-venta");
-
-  lista.innerHTML = "";
-  let total = 0;
-
-  ventaTemp.forEach(p => {
-    const subtotal = p.precio * p.cantidad;
-    total += subtotal;
-
-    const div = document.createElement("div");
-    div.classList.add("venta-item");
-
-    div.innerHTML = `
-      <span>${p.nombre} x${p.cantidad}</span>
-      <strong>$${subtotal}</strong>
-    `;
-
-    lista.appendChild(div);
-  });
-
-  resumen.innerHTML = `
-    <div class="venta-total">
-      Total: $${total}
-    </div>
-  `;
-}
-
-function cerrarVenta() {
-  document.getElementById("modal-venta").classList.add("hidden");
-}
-
-/* ➕ Agregar producto a venta */
-function agregarProducto(id) {
-  const prod = productosDB.find(p => p.id === id);
-
-  const existe = ventaTemp.find(p => p.id === id);
-
-  if (existe) {
-    existe.cantidad++;
-  } else {
-    ventaTemp.push({ ...prod, cantidad: 1 });
-  }
-
-  renderVentaModal(); // 🔥 clave
-}
-
-/* ✅ Confirmar venta */
-function accionModal() {
-
-  /* =========================
-     🧾 VENTA (FACTURA)
-  ========================= */
   if (modoModal === "venta") {
 
     if (ventaTemp.length === 0) {
@@ -216,47 +130,45 @@ function accionModal() {
 
     let total = 0;
 
-    ventaTemp.forEach(v => {
+    for (const v of ventaTemp) {
       const prod = productosDB.find(p => p.id === v.id);
 
       if (prod.stock !== undefined) {
-        prod.stock -= v.cantidad;
+        const newStock = prod.stock - v.cantidad;
+
+        await supabaseClient
+          .from("productos")
+          .update({ stock: newStock })
+          .eq("id", prod.id);
       }
 
       total += v.precio * v.cantidad;
-    });
+    }
 
-    DB.saveProductos(productosDB);
-
-    // 🧾 guardar factura
     const idVenta = Date.now();
 
-    DB.saveVenta({
+    await DB.saveVenta({
       id: idVenta,
       fecha: new Date(),
       items: ventaTemp,
       total
     });
 
-    // 💰 guardar ingreso automático
-    DB.saveMovimiento({
+    await DB.saveMovimiento({
       tipo: "ingreso",
       monto: total,
       descripcion: "Venta",
       fecha: new Date(),
-      idVenta: idVenta // 🔥 clave
-});
+      idVenta
+    });
 
     renderHistorial();
-    renderMovimientos(); // 🔥 IMPORTANTE (te faltaba)
+    renderMovimientos();
     renderAdmin();
 
     alert("Factura creada");
   }
 
-  /* =========================
-     💰 MOVIMIENTO MANUAL
-  ========================= */
   if (modoModal === "movimiento") {
 
     const tipo = document.getElementById("tipo-mov").value;
@@ -268,9 +180,7 @@ function accionModal() {
       return;
     }
 
-    if (!confirm("¿Confirmar movimiento?")) return;
-
-    DB.saveMovimiento({
+    await DB.saveMovimiento({
       tipo,
       monto,
       descripcion: desc,
@@ -278,7 +188,6 @@ function accionModal() {
     });
 
     renderMovimientos();
-
     alert("Movimiento agregado");
   }
 
@@ -286,14 +195,14 @@ function accionModal() {
 }
 
 /* =========================
-   📜 HISTORIAL
+   📜 HISTORIAL (SUPABASE FIX)
 ========================= */
 
-function renderHistorial() {
+async function renderHistorial() {
   const cont = document.getElementById("historial");
   cont.innerHTML = "";
 
-  const ventas = DB.getVentas();
+  const ventas = await DB.getVentas() || [];
 
   ventas.forEach((v, i) => {
     const div = document.createElement("div");
@@ -308,56 +217,44 @@ function renderHistorial() {
         <p class="prod-precio">Total: $${v.total}</p>
       </div>
 
-      <!-- 🔥 BOTÓN ELIMINAR -->
-      <button class="delete-btn" onclick="eliminarVenta(${i})">-</button>
+      <button class="delete-btn" onclick="eliminarVenta('${v.id}')">-</button>
     `;
 
     cont.appendChild(div);
   });
 }
-function eliminarVenta(index) {
+
+/* =========================
+   🗑 ELIMINAR VENTA (SUPABASE)
+========================= */
+
+async function eliminarVenta(id) {
+
   if (!confirm("¿Eliminar esta factura?")) return;
 
-  let ventas = DB.getVentas();
-  let movs = DB.getMovimientos();
-
-  const venta = ventas[index];
-
-  // 🔥 eliminar ingreso asociado (si existe)
-  movs = movs.filter(m => {
-    // si tiene idVenta lo usa
-    if (m.idVenta) return m.idVenta !== venta.id;
-
-    // fallback (ventas viejas sin id)
-    if (m.descripcion === "Venta" && m.monto === venta.total) {
-      return false;
-    }
-
-    return true;
-  });
-
-  // 🔥 guardar movimientos
-  localStorage.setItem("movimientos", JSON.stringify(movs));
-
-  // 🔥 eliminar venta
-  ventas.splice(index, 1);
-  localStorage.setItem("ventas", JSON.stringify(ventas));
+  await supabaseClient
+    .from("ventas")
+    .delete()
+    .eq("id", id);
 
   renderHistorial();
   renderMovimientos();
   renderAdmin();
-} 
-function renderMovimientos() {
+}
+
+/* =========================
+   💰 MOVIMIENTOS
+========================= */
+
+async function renderMovimientos() {
   const cont = document.getElementById("movimientos");
   cont.innerHTML = "";
 
-  const movs = DB.getMovimientos();
+  const movs = await DB.getMovimientos() || [];
 
-  movs.forEach((m, i) => {
+  movs.forEach((m) => {
     const div = document.createElement("div");
     div.classList.add("prod-card");
-
-    // 🎨 color según tipo
     div.classList.add(m.tipo === "ingreso" ? "ingreso" : "egreso");
 
     div.innerHTML = `
@@ -366,33 +263,16 @@ function renderMovimientos() {
         <p>${m.descripcion}</p>
         <p class="prod-precio">$${m.monto}</p>
       </div>
-
-      <!-- 🔥 BOTÓN ELIMINAR -->
-      <button class="delete-btn" onclick="eliminarMovimiento(${i})">-</button>
     `;
 
     cont.appendChild(div);
   });
 }
-function eliminarMovimiento(index) {
-  if (!confirm("¿Eliminar este movimiento?")) return;
 
-  let movs = DB.getMovimientos();
+/* =========================
+   🔙 VOLVER
+========================= */
 
-  movs.splice(index, 1);
-
-  // 🔥 guardar directo (seguro)
-  localStorage.setItem("movimientos", JSON.stringify(movs));
-
-  renderMovimientos();
-}
 function volver() {
   window.location.href = "index.html";
 }
-
-/* =========================
-   🚀 INIT
-========================= */
-cargarProductos();
-renderHistorial();
-renderMovimientos();

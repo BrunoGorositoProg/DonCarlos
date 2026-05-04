@@ -1,32 +1,93 @@
+const SUPABASE_URL = "https://jlvjnllbmbqmoszujwru.supabase.co";
+const SUPABASE_KEY = "sb_publishable_GzlfVP-TFDjD2EBOy3wX-A_0y-fFeN2"; // ⚠️ poné la correcta
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
 const DB = {
-  getProductos: () => {
-    return JSON.parse(localStorage.getItem("productos")) || productos;
+
+  /* =========================
+     PRODUCTOS
+  ========================= */
+
+  async getProductos() {
+    const { data, error } = await supabaseClient
+      .from("productos")
+      .select("*");
+
+    if (error) {
+      console.error("Error productos:", error);
+      return [];
+    }
+
+    return data;
   },
 
-  saveProductos: (data) => {
-    localStorage.setItem("productos", JSON.stringify(data));
+  async saveProductos(productos) {
+    const { error } = await supabaseClient
+      .from("productos")
+      .upsert(productos);
+
+    if (error) {
+      console.error("Error guardando productos:", error);
+    }
   },
 
-  getVentas: () => {
-    return JSON.parse(localStorage.getItem("ventas")) || [];
+  /* =========================
+     VENTAS
+  ========================= */
+
+  async getVentas() {
+    const { data, error } = await supabaseClient
+      .from("ventas")
+      .select("*")
+      .order("fecha", { ascending: false });
+
+    if (error) {
+      console.error("Error ventas:", error);
+      return [];
+    }
+
+    return data;
   },
 
-  saveVenta: (venta) => {
-    const ventas = DB.getVentas();
-    ventas.push(venta);
-    localStorage.setItem("ventas", JSON.stringify(ventas));
+  async saveVenta(venta) {
+    const { error } = await supabaseClient
+      .from("ventas")
+      .insert([venta]);
+
+    if (error) {
+      console.error("Error guardando venta:", error);
+    }
   },
 
-  saveVentas: (ventas) => {
-    localStorage.setItem("ventas", JSON.stringify(ventas));
-  },
-  getMovimientos: () => {
-    return JSON.parse(localStorage.getItem("movimientos")) || [];
+  /* =========================
+     MOVIMIENTOS
+  ========================= */
+
+  async getMovimientos() {
+    const { data, error } = await supabaseClient
+      .from("movimientos")
+      .select("*")
+      .order("fecha", { ascending: false });
+
+    if (error) {
+      console.error("Error movimientos:", error);
+      return [];
+    }
+
+    return data;
   },
 
-  saveMovimiento: (mov) => {
-    const movs = DB.getMovimientos();
-    movs.push(mov);
-    localStorage.setItem("movimientos", JSON.stringify(movs));
-  },
+  async saveMovimiento(mov) {
+    const { error } = await supabaseClient
+      .from("movimientos")
+      .insert([mov]);
+
+    if (error) {
+      console.error("Error guardando movimiento:", error);
+    }
+  }
 };

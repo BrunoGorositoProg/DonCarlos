@@ -1,3 +1,9 @@
+let productosDB = [];
+async function cargarProductos() {
+  productosDB = await DB.getProductos();
+  renderProductos();
+}
+
 const contenedor = document.getElementById("productos");
 const contenedorEspecial = document.getElementById("productos-especiales");
 const cartBtn = document.getElementById("cart-btn");
@@ -12,8 +18,6 @@ closeCart.onclick = () => cartPanel.classList.remove("active");
 let carrito = [];
 
 function renderProductos() {
-  productosDB = DB.getProductos(); // 🔥 siempre actualizado
-
   contenedor.innerHTML = "";
   contenedorEspecial.innerHTML = "";
 
@@ -71,7 +75,7 @@ window.onload = () => {
   cartBtn.onclick = () => cartPanel.classList.add("active");
   closeCart.onclick = () => cartPanel.classList.remove("active");
 
-  renderProductos();
+  cargarProductos();
 };
 // 🛒 Render carrito
 function renderCarrito() {

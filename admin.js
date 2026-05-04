@@ -1,4 +1,4 @@
-let productosDB = DB.getProductos();
+let productosDB = [];
 let ventaActual = [];
 let ventaTemp = [];
 let editandoId = null;
@@ -7,7 +7,10 @@ let modoModal = "";
 /* =========================
    🟢 PRODUCTOS (ADMIN)
 ========================= */
-
+async function cargarProductos() {
+  productosDB = await DB.getProductos();
+  renderAdmin();
+}
 function renderAdmin() {
   const cont = document.getElementById("admin-productos");
   cont.innerHTML = "";
@@ -70,21 +73,20 @@ function cancelarEdicion() {
   renderAdmin();
 }
 
-function guardarEdicion(id) {
+async function guardarEdicion(id) {
   const prod = productosDB.find(p => p.id === id);
 
   prod.nombre = document.getElementById(`nombre-${id}`).value;
   prod.precio = parseFloat(document.getElementById(`precio-${id}`).value);
 
   const stockVal = document.getElementById(`stock-${id}`).value;
-  prod.stock = stockVal ? parseInt(stockVal) : undefined;
+  prod.stock = stockVal ? parseInt(stockVal) : null;
 
   prod.descripcion = document.getElementById(`desc-${id}`).value;
 
-  DB.saveProductos(productosDB);
+  await DB.saveProductos([prod]);
 
-  // 🔥 ESTA LÍNEA ES CLAVE
-  productosDB = DB.getProductos();
+  productosDB = await DB.getProductos();
 
   editandoId = null;
   renderAdmin();
@@ -391,6 +393,6 @@ function volver() {
 /* =========================
    🚀 INIT
 ========================= */
-
-renderAdmin();
+cargarProductos();
 renderHistorial();
+renderMovimientos();

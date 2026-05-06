@@ -28,27 +28,26 @@
     <div id="admin-productos"></div>
   </div>
 
-  <!-- GENERAR VENTA -->
+    <!-- GENERAR VENTA -->
   <div class="section">
-    <h2>Generar Venta</h2>
-    <button class="generar-btn" onclick="abrirVenta()">Generar Venta</button>
-  <!-- MODAL -->
-  <div id="modal-venta" class="modal hidden">
-    <div class="modal-content">
-      <h2 id="modal-title"></h2>
-
-      <div id="modal-productos"></div>
-
-      <button class="add-btn" onclick="accionModal()">
-        Confirmar
-      </button>
-
-      <button class="edit-btn" onclick="cerrarVenta()">
-        Cancelar
-      </button>
-    </div>
+      <h2>Generar Venta</h2>
+      <button class="generar-btn" onclick="abrirModalVenta()">Generar Venta</button>
   </div>
 
+    <!-- MODAL -->
+  <div id="modal-venta" class="modal hidden">
+      <div class="modal-content">
+
+        <h2 id="modal-title">Nueva Venta</h2>
+
+        <!-- 🔥 IMPORTANTE -->
+          <div id="modal-productos" class="modal-body"></div>
+          <div id="venta-resumen"></div>
+        <button class="add-btn" onclick="accionModal()">Confirmar</button>
+        <button class="edit-btn" onclick="cerrarModal()">Cancelar</button>
+
+      </div>
+</div>
   <!-- HISTORIAL -->
   <div class="section">
     <h2>Historial</h2>

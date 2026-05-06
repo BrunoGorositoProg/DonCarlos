@@ -74,7 +74,7 @@ function cancelarEdicion() {
 }
 
 /* =========================
-   💾 GUARDAR EDICIÓN (FIX REAL)
+   💾 GUARDAR EDICIÓN
 ========================= */
 
 async function guardarEdicion(id) {
@@ -89,8 +89,6 @@ async function guardarEdicion(id) {
   }
 
   prod.descripcion = document.getElementById(`desc-${id}`).value;
-
-  console.log("PRODUCTO A GUARDAR:", prod);
 
   const { error } = await supabaseClient
     .from("productos")
@@ -108,13 +106,126 @@ async function guardarEdicion(id) {
   }
 
   await cargarProductos();
-
   editandoId = null;
   renderAdmin();
 }
 
 /* =========================
-   🧾 VENTAS (GLOBAL FIX STOCK)
+   🧠 MODAL CONTROL
+========================= */
+
+function abrirModalVenta() {
+  modoModal = "venta";
+  ventaTemp = [];
+
+  document.getElementById("venta-resumen").innerHTML = "";
+  document.getElementById("modal-title").innerText = "Nueva Venta";
+
+  renderModalProductos();
+
+  document.getElementById("modal-venta").classList.remove("hidden");
+}
+
+function abrirMovimiento() {
+  modoModal = "movimiento";
+
+  document.getElementById("modal-title").innerText = "Nuevo Movimiento";
+
+  document.getElementById("modal-productos").innerHTML = `
+    <select id="tipo-mov">
+      <option value="ingreso">Ingreso</option>
+      <option value="egreso">Egreso</option>
+    </select>
+
+    <input id="monto-mov" type="number" placeholder="Monto" />
+    <input id="desc-mov" placeholder="Descripción" />
+  `;
+
+  document.getElementById("modal-venta").classList.remove("hidden");
+}
+
+function cerrarModal() {
+  document.getElementById("modal-venta").classList.add("hidden");
+}
+
+/* =========================
+   🛒 MODAL PRODUCTOS
+========================= */
+
+function renderModalProductos() {
+  const cont = document.getElementById("modal-productos");
+  cont.innerHTML = "";
+
+  productosDB.forEach(p => {
+    const div = document.createElement("div");
+    div.classList.add("prod-card");
+
+    div.innerHTML = `
+      <img src="${p.imagen}" class="prod-img" />
+
+      <div class="prod-info">
+        <h3>${p.nombre}</h3>
+        <p>$${p.precio}</p>
+      </div>
+
+      <button onclick="agregarProducto(${p.id})">+</button>
+    `;
+
+    cont.appendChild(div);
+  });
+}
+
+/* =========================
+   ➕ AGREGAR PRODUCTO
+========================= */
+
+function agregarProducto(id) {
+  const prod = productosDB.find(p => p.id === id);
+  if (!prod) return;
+
+  const existente = ventaTemp.find(v => v.id === id);
+
+  if (existente) {
+    existente.cantidad++;
+  } else {
+    ventaTemp.push({
+      id: prod.id,
+      nombre: prod.nombre,
+      precio: prod.precio,
+      cantidad: 1
+    });
+  }
+
+  renderVenta();
+}
+function renderVenta() {
+  const cont = document.getElementById("venta-resumen");
+  cont.innerHTML = "";
+
+  let total = 0;
+
+  ventaTemp.forEach(v => {
+    total += v.precio * v.cantidad;
+
+    const div = document.createElement("div");
+    div.classList.add("venta-item");
+
+    div.innerHTML = `
+      <span>${v.nombre} x${v.cantidad}</span>
+      <span>$${v.precio * v.cantidad}</span>
+    `;
+
+    cont.appendChild(div);
+  });
+
+  const totalDiv = document.createElement("div");
+  totalDiv.classList.add("venta-total");
+  totalDiv.innerText = `Total: $${total}`;
+
+  cont.appendChild(totalDiv);
+}
+/* =========================
+   🧾 ACCIÓN MODAL
 ========================= */
 
 async function accionModal() {
@@ -162,9 +273,9 @@ async function accionModal() {
       idVenta
     });
 
+    await cargarProductos();
     renderHistorial();
     renderMovimientos();
-    renderAdmin();
 
     alert("Factura creada");
   }
@@ -191,11 +302,12 @@ async function accionModal() {
     alert("Movimiento agregado");
   }
 
-  cerrarVenta();
+  ventaTemp = [];
+  cerrarModal();
 }
 
 /* =========================
-   📜 HISTORIAL (SUPABASE FIX)
+   📜 HISTORIAL
 ========================= */
 
 async function renderHistorial() {
@@ -225,7 +337,7 @@ async function renderHistorial() {
 }
 
 /* =========================
-   🗑 ELIMINAR VENTA (SUPABASE)
+   🗑 ELIMINAR VENTA
 ========================= */
 
 async function eliminarVenta(id) {
@@ -239,7 +351,7 @@ async function eliminarVenta(id) {
 
   renderHistorial();
   renderMovimientos();
-  renderAdmin();
+  cargarProductos();
 }
 
 /* =========================

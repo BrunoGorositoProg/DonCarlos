@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://jlvjnllbmbqmoszujwru.supabase.co";
-const SUPABASE_KEY = "sb_publishable_GzlfVP-TFDjD2EBOy3wX-A_0y-fFeN2"; //correcta
+const SUPABASE_KEY = "sb_publishable_GzlfVP-TFDjD2EBOy3wX-A_0y-fFeN2"; // ⚠️ poné la correcta
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,

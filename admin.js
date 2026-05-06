@@ -270,7 +270,7 @@ async function accionModal() {
       monto: total,
       descripcion: "Venta",
       fecha: new Date(),
-      idVenta
+      idventa : idVenta,
     });
 
     await cargarProductos();
@@ -344,14 +344,53 @@ async function eliminarVenta(id) {
 
   if (!confirm("¿Eliminar esta factura?")) return;
 
-  await supabaseClient
+  // 🔴 borrar movimiento asociado
+  const { error: errorMov } = await supabaseClient
+    .from("movimientos")
+    .delete()
+    .eq("idventa", id);
+
+  if (errorMov) {
+    console.error("Error borrando movimiento:", errorMov);
+  }
+
+    // 🔁 recuperar stock
+  const { data: venta } = await supabaseClient
+    .from("ventas")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (venta) {
+    for (const item of venta.items) {
+      const prod = productosDB.find(p => p.id === item.id);
+
+      if (prod && prod.stock !== undefined) {
+        await supabaseClient
+          .from("productos")
+          .update({ stock: prod.stock + item.cantidad })
+          .eq("id", prod.id);
+      }
+    }
+  }
+
+  // 🔴 borrar venta
+  const { error: errorVenta } = await supabaseClient
     .from("ventas")
     .delete()
     .eq("id", id);
 
+  if (errorVenta) {
+    console.error("Error borrando venta:", errorVenta);
+    return;
+  }
+
+  // 🔄 refrescar todo
+  await cargarProductos();
   renderHistorial();
   renderMovimientos();
-  cargarProductos();
+
+  alert("Factura eliminada");
 }
 
 /* =========================

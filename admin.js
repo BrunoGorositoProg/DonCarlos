@@ -1,5 +1,4 @@
 let productosDB = [];
-let ventaActual = [];
 let ventaTemp = [];
 let editandoId = null;
 let modoModal = "";
@@ -7,14 +6,29 @@ let modoModal = "";
 /* =========================
    🚀 INIT
 ========================= */
-cargarProductos();
-renderHistorial();
-renderMovimientos();
+async function init() {
+  await cargarProductos();
+  await cargarMeses();
+
+  await renderHistorial();
+  await renderMovimientos();
+  await renderResumen();
+  await renderTopProductos();
+}
+
+init();
 
 /* =========================
-   🟢 PRODUCTOS (ADMIN)
+   🧠 HELPERS
 ========================= */
+function obtenerMes(fecha) {
+  const f = new Date(fecha);
+  return `${f.getFullYear()}-${f.getMonth() + 1}`;
+}
 
+/* =========================
+   🟢 PRODUCTOS
+========================= */
 async function cargarProductos() {
   productosDB = await DB.getProductos();
   renderAdmin();
@@ -35,7 +49,7 @@ function renderAdmin() {
         <div class="prod-info">
           <input id="nombre-${p.id}" value="${p.nombre}" />
           <input id="precio-${p.id}" type="number" value="${p.precio}" />
-          <input id="stock-${p.id}" type="number" value="${p.stock ?? ""}" placeholder="Sin límite"/>
+          <input id="stock-${p.id}" type="number" value="${p.stock ?? ""}" />
           <input id="desc-${p.id}" value="${p.descripcion || ""}" />
         </div>
 
@@ -73,10 +87,6 @@ function cancelarEdicion() {
   renderAdmin();
 }
 
-/* =========================
-   💾 GUARDAR EDICIÓN
-========================= */
-
 async function guardarEdicion(id) {
   const prod = productosDB.find(p => p.id === id);
 
@@ -84,73 +94,34 @@ async function guardarEdicion(id) {
   prod.precio = parseFloat(document.getElementById(`precio-${id}`).value);
 
   const stockVal = document.getElementById(`stock-${id}`).value;
-  if (stockVal !== "") {
-    prod.stock = parseInt(stockVal);
-  }
+  prod.stock = stockVal !== "" ? parseInt(stockVal) : null;
 
   prod.descripcion = document.getElementById(`desc-${id}`).value;
 
   const { error } = await supabaseClient
     .from("productos")
-    .update({
-      nombre: prod.nombre,
-      precio: prod.precio,
-      stock: prod.stock,
-      descripcion: prod.descripcion
-    })
-    .eq("id", prod.id);
+    .update(prod)
+    .eq("id", id);
 
-  if (error) {
-    console.error("ERROR UPDATE:", error);
-    return;
-  }
+  if (error) return console.error(error);
 
   await cargarProductos();
   editandoId = null;
-  renderAdmin();
 }
 
 /* =========================
-   🧠 MODAL CONTROL
+   🛒 VENTAS
 ========================= */
-
 function abrirModalVenta() {
   modoModal = "venta";
   ventaTemp = [];
 
   document.getElementById("venta-resumen").innerHTML = "";
-  document.getElementById("modal-title").innerText = "Nueva Venta";
+  document.getElementById("modal-productos").innerHTML = "";
 
   renderModalProductos();
-
   document.getElementById("modal-venta").classList.remove("hidden");
 }
-
-function abrirMovimiento() {
-  modoModal = "movimiento";
-
-  document.getElementById("modal-title").innerText = "Nuevo Movimiento";
-
-  document.getElementById("modal-productos").innerHTML = `
-    <select id="tipo-mov">
-      <option value="ingreso">Ingreso</option>
-      <option value="egreso">Egreso</option>
-    </select>
-
-    <input id="monto-mov" type="number" placeholder="Monto" />
-    <input id="desc-mov" placeholder="Descripción" />
-  `;
-
-  document.getElementById("modal-venta").classList.remove("hidden");
-}
-
-function cerrarModal() {
-  document.getElementById("modal-venta").classList.add("hidden");
-}
-
-/* =========================
-   🛒 MODAL PRODUCTOS
-========================= */
 
 function renderModalProductos() {
   const cont = document.getElementById("modal-productos");
@@ -162,12 +133,10 @@ function renderModalProductos() {
 
     div.innerHTML = `
       <img src="${p.imagen}" class="prod-img" />
-
       <div class="prod-info">
         <h3>${p.nombre}</h3>
         <p>$${p.precio}</p>
       </div>
-
       <button onclick="agregarProducto(${p.id})">+</button>
     `;
 
@@ -175,13 +144,8 @@ function renderModalProductos() {
   });
 }
 
-/* =========================
-   ➕ AGREGAR PRODUCTO
-========================= */
-
 function agregarProducto(id) {
   const prod = productosDB.find(p => p.id === id);
-  if (!prod) return;
 
   const existente = ventaTemp.find(v => v.id === id);
 
@@ -198,6 +162,7 @@ function agregarProducto(id) {
 
   renderVenta();
 }
+
 function renderVenta() {
   const cont = document.getElementById("venta-resumen");
   cont.innerHTML = "";
@@ -221,38 +186,19 @@ function renderVenta() {
   const totalDiv = document.createElement("div");
   totalDiv.classList.add("venta-total");
   totalDiv.innerText = `Total: $${total}`;
-
   cont.appendChild(totalDiv);
 }
+
 /* =========================
-   🧾 ACCIÓN MODAL
+   📦 GUARDAR VENTA
 ========================= */
-
 async function accionModal() {
-
   if (modoModal === "venta") {
-
-    if (ventaTemp.length === 0) {
-      alert("No hay productos");
-      return;
-    }
-
-    if (!confirm("¿Confirmar factura?")) return;
+    if (!ventaTemp.length) return alert("No hay productos");
 
     let total = 0;
 
     for (const v of ventaTemp) {
-      const prod = productosDB.find(p => p.id === v.id);
-
-      if (prod.stock !== undefined) {
-        const newStock = prod.stock - v.cantidad;
-
-        await supabaseClient
-          .from("productos")
-          .update({ stock: newStock })
-          .eq("id", prod.id);
-      }
-
       total += v.precio * v.cantidad;
     }
 
@@ -270,63 +216,45 @@ async function accionModal() {
       monto: total,
       descripcion: "Venta",
       fecha: new Date(),
-      idventa : idVenta,
+      idventa: idVenta
     });
 
-    await cargarProductos();
     renderHistorial();
     renderMovimientos();
-
-    alert("Factura creada");
-  }
-
-  if (modoModal === "movimiento") {
-
-    const tipo = document.getElementById("tipo-mov").value;
-    const monto = parseFloat(document.getElementById("monto-mov").value);
-    const desc = document.getElementById("desc-mov").value;
-
-    if (!monto || !desc) {
-      alert("Completar datos");
-      return;
-    }
-
-    await DB.saveMovimiento({
-      tipo,
-      monto,
-      descripcion: desc,
-      fecha: new Date()
-    });
-
-    renderMovimientos();
-    alert("Movimiento agregado");
+    renderResumen();
+    renderTopProductos();
   }
 
   ventaTemp = [];
   cerrarModal();
 }
 
+function cerrarModal() {
+  document.getElementById("modal-venta").classList.add("hidden");
+}
+
 /* =========================
    📜 HISTORIAL
 ========================= */
-
-async function renderHistorial() {
+async function renderHistorial(mes = null) {
   const cont = document.getElementById("historial");
   cont.innerHTML = "";
 
-  const ventas = await DB.getVentas() || [];
+  const ventas = await DB.getVentas();
 
-  ventas.forEach((v, i) => {
+  const filtradas = mes
+    ? ventas.filter(v => obtenerMes(v.fecha) === mes)
+    : ventas;
+
+  filtradas.forEach((v, i) => {
     const div = document.createElement("div");
     div.classList.add("prod-card");
-
-    let items = v.items.map(p => `${p.nombre} x${p.cantidad}`).join(", ");
 
     div.innerHTML = `
       <div class="prod-info">
         <h3>Factura #${i + 1}</h3>
-        <p>${items}</p>
-        <p class="prod-precio">Total: $${v.total}</p>
+        <p>${v.items.map(i => i.nombre).join(", ")}</p>
+        <p class="prod-precio">$${v.total}</p>
       </div>
 
       <button class="delete-btn" onclick="eliminarVenta(${v.id})">-</button>
@@ -337,83 +265,27 @@ async function renderHistorial() {
 }
 
 /* =========================
-   🗑 ELIMINAR VENTA
-========================= */
-
-async function eliminarVenta(id) {
-  id = Number(id);
-  if (!confirm("¿Eliminar esta factura?")) return;
-
-  // 🔴 borrar movimiento asociado
-  const { error: errorMov } = await supabaseClient
-    .from("movimientos")
-    .delete()
-    .eq("idventa", id);
-
-  if (errorMov) {
-    console.error("Error borrando movimiento:", errorMov);
-  }
-
-    // 🔁 recuperar stock
-  const { data: venta } = await supabaseClient
-    .from("ventas")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (venta) {
-    for (const item of venta.items) {
-      const prod = productosDB.find(p => p.id === item.id);
-
-      if (prod && prod.stock !== undefined) {
-        await supabaseClient
-          .from("productos")
-          .update({ stock: prod.stock + item.cantidad })
-          .eq("id", prod.id);
-      }
-    }
-  }
-
-  // 🔴 borrar venta
-  const { error: errorVenta } = await supabaseClient
-    .from("ventas")
-    .delete()
-    .eq("id", id);
-
-    if (errorVenta) {
-      console.error("Error borrando venta:", errorVenta);
-      alert("Error al eliminar en DB");
-      return;
-    }
-
-  // 🔄 refrescar todo
-  await cargarProductos();
-  renderHistorial();
-  renderMovimientos();
-
-  alert("Factura eliminada");
-}
-
-/* =========================
    💰 MOVIMIENTOS
 ========================= */
-
-async function renderMovimientos() {
+async function renderMovimientos(mes = null) {
   const cont = document.getElementById("movimientos");
   cont.innerHTML = "";
 
-  const movs = await DB.getMovimientos() || [];
+  const movs = await DB.getMovimientos();
 
-  movs.forEach((m) => {
+  const filtrados = mes
+    ? movs.filter(m => obtenerMes(m.fecha) === mes)
+    : movs;
+
+  filtrados.forEach(m => {
     const div = document.createElement("div");
-    div.classList.add("prod-card");
-    div.classList.add(m.tipo === "ingreso" ? "ingreso" : "egreso");
+    div.classList.add("prod-card", m.tipo);
 
     div.innerHTML = `
       <div class="prod-info">
-        <h3>${m.tipo === "ingreso" ? "Ingreso" : "Egreso"}</h3>
+        <h3>${m.tipo}</h3>
         <p>${m.descripcion}</p>
-        <p class="prod-precio">$${m.monto}</p>
+        <p>$${m.monto}</p>
       </div>
     `;
 
@@ -422,9 +294,96 @@ async function renderMovimientos() {
 }
 
 /* =========================
+   📊 RESUMEN
+========================= */
+async function renderResumen(mes = null) {
+  const movs = await DB.getMovimientos();
+
+  const filtrados = mes
+    ? movs.filter(m => obtenerMes(m.fecha) === mes)
+    : movs;
+
+  let ingresos = 0;
+  let egresos = 0;
+
+  filtrados.forEach(m => {
+    if (m.tipo === "ingreso") ingresos += Number(m.monto);
+    else egresos += Number(m.monto);
+  });
+
+  const balance = ingresos - egresos;
+
+  document.getElementById("resumen-mes").innerHTML = `
+    <h3>Resumen</h3>
+    <p>Ingresos: $${ingresos}</p>
+    <p>Egresos: $${egresos}</p>
+    <p class="${balance >= 0 ? 'ganancia' : 'perdida'}">
+      ${balance}
+    </p>
+  `;
+}
+
+/* =========================
+   🏆 TOP PRODUCTOS
+========================= */
+async function renderTopProductos(mes = null) {
+  const cont = document.getElementById("top-productos");
+  cont.innerHTML = "";
+
+  const ventas = await DB.getVentas();
+
+  const filtradas = mes
+    ? ventas.filter(v => obtenerMes(v.fecha) === mes)
+    : ventas;
+
+  const contador = {};
+
+  filtradas.forEach(v => {
+    v.items.forEach(i => {
+      contador[i.nombre] = (contador[i.nombre] || 0) + i.cantidad;
+    });
+  });
+
+  Object.entries(contador)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([n, c]) => {
+      const div = document.createElement("div");
+      div.innerText = `${n}: ${c}`;
+      cont.appendChild(div);
+    });
+}
+
+/* =========================
+   📅 FILTRO
+========================= */
+async function cargarMeses() {
+  const ventas = await DB.getVentas();
+  const select = document.getElementById("filtro-mes");
+
+  const meses = [...new Set(ventas.map(v => obtenerMes(v.fecha)))];
+
+  select.innerHTML = `<option value="">Todos</option>`;
+
+  meses.forEach(m => {
+    const opt = document.createElement("option");
+    opt.value = m;
+    opt.textContent = m;
+    select.appendChild(opt);
+  });
+}
+
+function cambiarMes() {
+  const mes = document.getElementById("filtro-mes").value;
+
+  renderHistorial(mes);
+  renderMovimientos(mes);
+  renderResumen(mes);
+  renderTopProductos(mes);
+}
+
+/* =========================
    🔙 VOLVER
 ========================= */
-
 function volver() {
   window.location.href = "index.html";
 }

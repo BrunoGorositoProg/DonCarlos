@@ -48,21 +48,24 @@
 
       </div>
 </div>
-  <!-- HISTORIAL -->
-  <div class="section">
-    <h2>Historial</h2>
-    <div id="historial"></div>
+<!-- HISTORIAL -->
+<div class="section">
+  <h2>Historial</h2>
+
+  <div class="filtro-mes-container">
+    <label>Filtrar por mes:</label>
+    <select id="filtro-mes" onchange="cambiarMes()"></select>
   </div>
 
-  <div class="section">
-  <h2>Ingresos y Egresos</h2>
+  <!-- 💰 RESUMEN DEL MES -->
+  <div id="resumen-mes" class="resumen-box"></div>
 
-  <button class="generar-btn" onclick="abrirMovimiento()">
-    Agregar Movimiento
-  </button>
+  <!-- 📜 LISTA DE FACTURAS -->
+  <div id="historial"></div>
 
-  <div id="movimientos"></div>
-</div>
+  <!-- 📦 PRODUCTOS VENDIDOS -->
+  <h3>Productos vendidos</h3>
+  <div id="top-productos" class="top-productos"></div>
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>

@@ -256,12 +256,52 @@ async function renderHistorial(mes = null) {
         <p>${v.items.map(i => i.nombre).join(", ")}</p>
         <p class="prod-precio">$${v.total}</p>
       </div>
-
-      <button class="delete-btn" onclick="eliminarVenta(${v.id})">-</button>
-    `;
-
+    <button class="delete-btn" onclick="eliminarVenta(${v.id})">-</button>    `;
     cont.appendChild(div);
   });
+}
+async function eliminarVenta(id) {
+
+  if (!confirm("¿Eliminar esta factura?")) return;
+
+  // 🔁 traer venta para recuperar stock (opcional pero recomendable)
+  const { data: venta } = await supabaseClient
+    .from("ventas")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (venta && venta.items) {
+    for (const item of venta.items) {
+      const prod = productosDB.find(p => p.id === item.id);
+
+      if (prod && prod.stock !== undefined) {
+        await supabaseClient
+          .from("productos")
+          .update({ stock: prod.stock + item.cantidad })
+          .eq("id", prod.id);
+      }
+    }
+  }
+
+  // 🔴 borrar movimiento
+  await supabaseClient
+    .from("movimientos")
+    .delete()
+    .eq("idventa", id);
+
+  // 🔴 borrar venta
+  await supabaseClient
+    .from("ventas")
+    .delete()
+    .eq("id", id);
+
+  // 🔄 refrescar
+  await cargarProductos();
+  renderHistorial();
+  renderMovimientos();
+
+  alert("Factura eliminada");
 }
 
 /* =========================

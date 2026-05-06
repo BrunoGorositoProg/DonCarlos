@@ -329,7 +329,7 @@ async function renderHistorial() {
         <p class="prod-precio">Total: $${v.total}</p>
       </div>
 
-      <button class="delete-btn" onclick="eliminarVenta('${v.id}')">-</button>
+      <button class="delete-btn" onclick="eliminarVenta(${v.id})">-</button>
     `;
 
     cont.appendChild(div);
@@ -341,7 +341,7 @@ async function renderHistorial() {
 ========================= */
 
 async function eliminarVenta(id) {
-
+  id = Number(id);
   if (!confirm("¿Eliminar esta factura?")) return;
 
   // 🔴 borrar movimiento asociado
@@ -380,10 +380,11 @@ async function eliminarVenta(id) {
     .delete()
     .eq("id", id);
 
-  if (errorVenta) {
-    console.error("Error borrando venta:", errorVenta);
-    return;
-  }
+    if (errorVenta) {
+      console.error("Error borrando venta:", errorVenta);
+      alert("Error al eliminar en DB");
+      return;
+    }
 
   // 🔄 refrescar todo
   await cargarProductos();

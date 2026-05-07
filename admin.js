@@ -84,6 +84,7 @@ async function guardarEdicion(id) {
   prod.precio = parseFloat(document.getElementById(`precio-${id}`).value);
 
   const stockVal = document.getElementById(`stock-${id}`).value;
+
   if (stockVal !== "") {
     prod.stock = parseInt(stockVal);
   }
@@ -106,7 +107,9 @@ async function guardarEdicion(id) {
   }
 
   await cargarProductos();
+
   editandoId = null;
+
   renderAdmin();
 }
 
@@ -115,18 +118,23 @@ async function guardarEdicion(id) {
 ========================= */
 
 function abrirModalVenta() {
+
   modoModal = "venta";
+
   ventaTemp = [];
 
   document.getElementById("venta-resumen").innerHTML = "";
+
   document.getElementById("modal-title").innerText = "Nueva Venta";
 
   renderModalProductos();
 
   document.getElementById("modal-venta").classList.remove("hidden");
+
 }
 
 function abrirMovimiento() {
+
   modoModal = "movimiento";
 
   document.getElementById("modal-title").innerText = "Nuevo Movimiento";
@@ -138,10 +146,14 @@ function abrirMovimiento() {
     </select>
 
     <input id="monto-mov" type="number" placeholder="Monto" />
+
     <input id="desc-mov" placeholder="Descripción" />
   `;
 
+  document.getElementById("venta-resumen").innerHTML = "";
+
   document.getElementById("modal-venta").classList.remove("hidden");
+
 }
 
 function cerrarModal() {
@@ -153,17 +165,23 @@ function cerrarModal() {
   document.getElementById("modal-productos").innerHTML = "";
 
   document.getElementById("venta-resumen").innerHTML = "";
+
 }
+
 /* =========================
    🛒 MODAL PRODUCTOS
 ========================= */
 
 function renderModalProductos() {
+
   const cont = document.getElementById("modal-productos");
+
   cont.innerHTML = "";
 
   productosDB.forEach(p => {
+
     const div = document.createElement("div");
+
     div.classList.add("prod-card");
 
     div.innerHTML = `
@@ -178,7 +196,9 @@ function renderModalProductos() {
     `;
 
     cont.appendChild(div);
+
   });
+
 }
 
 /* =========================
@@ -186,34 +206,46 @@ function renderModalProductos() {
 ========================= */
 
 function agregarProducto(id) {
+
   const prod = productosDB.find(p => p.id === id);
+
   if (!prod) return;
 
   const existente = ventaTemp.find(v => v.id === id);
 
   if (existente) {
+
     existente.cantidad++;
+
   } else {
+
     ventaTemp.push({
       id: prod.id,
       nombre: prod.nombre,
       precio: prod.precio,
       cantidad: 1
     });
+
   }
 
   renderVenta();
+
 }
+
 function renderVenta() {
+
   const cont = document.getElementById("venta-resumen");
+
   cont.innerHTML = "";
 
   let total = 0;
 
   ventaTemp.forEach(v => {
+
     total += v.precio * v.cantidad;
 
     const div = document.createElement("div");
+
     div.classList.add("venta-item");
 
     div.innerHTML = `
@@ -222,95 +254,119 @@ function renderVenta() {
     `;
 
     cont.appendChild(div);
+
   });
 
   const totalDiv = document.createElement("div");
+
   totalDiv.classList.add("venta-total");
+
   totalDiv.innerText = `Total: $${total}`;
 
   cont.appendChild(totalDiv);
+
 }
+
 /* =========================
    🧾 ACCIÓN MODAL
 ========================= */
 
 async function accionModal() {
 
-  if (modoModal === "venta") {
+if (modoModal === "venta") {
 
-    if (ventaTemp.length === 0) {
-      alert("No hay productos");
-      return;
+  if (ventaTemp.length === 0) {
+    return;
+  }
+
+  let total = 0;
+
+  for (const v of ventaTemp) {
+
+    const prod = productosDB.find(p => p.id === v.id);
+
+    if (prod.stock !== undefined) {
+
+      const newStock = prod.stock - v.cantidad;
+
+      await supabaseClient
+        .from("productos")
+        .update({ stock: newStock })
+        .eq("id", prod.id);
+
     }
 
-    if (!confirm("¿Confirmar factura?")) return;
+    total += v.precio * v.cantidad;
 
-    let total = 0;
+  }
 
-    for (const v of ventaTemp) {
-      const prod = productosDB.find(p => p.id === v.id);
+  const idVenta = Date.now();
 
-      if (prod.stock !== undefined) {
-        const newStock = prod.stock - v.cantidad;
+  await DB.saveVenta({
+    id: idVenta,
+    fecha: new Date(),
+    items: ventaTemp,
+    total
+  });
 
-        await supabaseClient
-          .from("productos")
-          .update({ stock: newStock })
-          .eq("id", prod.id);
+  await supabaseClient
+    .from("movimientos")
+    .insert([
+      {
+        tipo: "ingreso",
+        monto: total,
+        descripcion: "Venta",
+        fecha: new Date(),
+        idVenta
       }
+    ]);
 
-      total += v.precio * v.cantidad;
-    }
+  await cargarProductos();
 
-    const idVenta = Date.now();
+  renderHistorial();
 
-    await DB.saveVenta({
-      id: idVenta,
-      fecha: new Date(),
-      items: ventaTemp,
-      total
-    });
+  renderMovimientos();
 
-    await DB.saveMovimiento({
-      tipo: "ingreso",
-      monto: total,
-      descripcion: "Venta",
-      fecha: new Date(),
-      idVenta
-    });
+}
 
-    await cargarProductos();
-    renderHistorial();
-    renderMovimientos();
+if (modoModal === "movimiento") {
 
-    alert("Factura creada");
+  const tipo = document.getElementById("tipo-mov").value;
+
+  const monto = parseFloat(
+    document.getElementById("monto-mov").value
+  );
+
+  const desc = document.getElementById("desc-mov").value;
+
+  if (!monto || !desc) {
+    return;
   }
 
-  if (modoModal === "movimiento") {
+  const { error } = await supabaseClient
+    .from("movimientos")
+    .insert([
+      {
+        tipo,
+        monto,
+        descripcion: desc,
+        fecha: new Date()
+      }
+    ]);
 
-    const tipo = document.getElementById("tipo-mov").value;
-    const monto = parseFloat(document.getElementById("monto-mov").value);
-    const desc = document.getElementById("desc-mov").value;
-
-    if (!monto || !desc) {
-      alert("Completar datos");
-      return;
-    }
-
-    await DB.saveMovimiento({
-      id: Date.now(),
-      tipo,
-      monto,
-      descripcion: desc,
-      fecha: new Date()
-    });
-
-    renderMovimientos();
-    alert("Movimiento agregado");
+  if (error) {
+    console.error(error);
+    return;
   }
+
+  renderMovimientos();
+
+}
 
   ventaTemp = [];
+
   cerrarModal();
+
 }
 
 /* =========================
@@ -318,16 +374,22 @@ async function accionModal() {
 ========================= */
 
 async function renderHistorial() {
+
   const cont = document.getElementById("historial");
+
   cont.innerHTML = "";
 
   const ventas = await DB.getVentas() || [];
 
   ventas.forEach((v, i) => {
+
     const div = document.createElement("div");
+
     div.classList.add("prod-card");
 
-    let items = v.items.map(p => `${p.nombre} x${p.cantidad}`).join(", ");
+    let items = v.items.map(
+      p => `${p.nombre} x${p.cantidad}`
+    ).join(", ");
 
     div.innerHTML = `
       <div class="prod-info">
@@ -336,11 +398,15 @@ async function renderHistorial() {
         <p class="prod-precio">Total: $${v.total}</p>
       </div>
 
-      <button class="delete-btn" onclick="eliminarVenta('${v.id}')">-</button>
+      <button class="delete-btn" onclick="eliminarVenta('${v.id}')">
+        -
+      </button>
     `;
 
     cont.appendChild(div);
+
   });
+
 }
 
 /* =========================
@@ -349,16 +415,17 @@ async function renderHistorial() {
 
 async function eliminarVenta(id) {
 
-  if (!confirm("¿Eliminar esta factura?")) return;
-
   await supabaseClient
     .from("ventas")
     .delete()
     .eq("id", id);
 
   renderHistorial();
+
   renderMovimientos();
+
   cargarProductos();
+
 }
 
 /* =========================
@@ -366,51 +433,65 @@ async function eliminarVenta(id) {
 ========================= */
 
 async function renderMovimientos() {
+
   const cont = document.getElementById("movimientos");
+
   cont.innerHTML = "";
 
-  const movs = await DB.getMovimientos() || [];
+  const { data: movs, error } = await supabaseClient
+    .from("movimientos")
+    .select("*")
+    .order("fecha", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
 
   movs.forEach((m) => {
+
     const div = document.createElement("div");
+
     div.classList.add("prod-card");
-    div.classList.add(m.tipo === "ingreso" ? "ingreso" : "egreso");
+
+    div.classList.add(
+      m.tipo === "ingreso" ? "ingreso" : "egreso"
+    );
 
     div.innerHTML = `
-  <div class="prod-info">
-    <h3>${m.tipo === "ingreso" ? "Ingreso" : "Egreso"}</h3>
-    <p>${m.descripcion}</p>
-    <p class="prod-precio">$${m.monto}</p>
-  </div>
+      <div class="prod-info">
+        <h3>${m.tipo === "ingreso" ? "Ingreso" : "Egreso"}</h3>
+        <p>${m.descripcion}</p>
+        <p class="prod-precio">$${m.monto}</p>
+      </div>
 
-  <button class="delete-btn" onclick="eliminarMovimiento('${m.id}')">
-    -
-  </button>
-`;
+      <button
+        class="delete-btn"
+        onclick="eliminarMovimiento('${m.id}')"
+      >
+        -
+      </button>
+    `;
 
     cont.appendChild(div);
+
   });
+
 }
+
 /* =========================
    🗑 ELIMINAR MOVIMIENTO
 ========================= */
 
 async function eliminarMovimiento(id) {
 
-  if (!confirm("¿Eliminar movimiento?")) return;
-  document.addEventListener("click", function(e) {
-
-  if (e.target.id === "cancelar-modal") {
-    cerrarModal();
-  }
-
-});
   await supabaseClient
     .from("movimientos")
     .delete()
     .eq("id", id);
 
   renderMovimientos();
+
 }
 
 /* =========================
@@ -418,5 +499,7 @@ async function eliminarMovimiento(id) {
 ========================= */
 
 function volver() {
+
   window.location.href = "index.html";
+
 }

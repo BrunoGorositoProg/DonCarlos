@@ -1,44 +1,45 @@
 const SUPABASE_URL = "https://jlvjnllbmbqmoszujwru.supabase.co";
-const SUPABASE_KEY = "sb_publishable_GzlfVP-TFDjD2EBOy3wX-A_0y-fFeN2"; // ⚠️ poné la correcta
+const SUPABASE_KEY = "sb_publishable_GzlfVP-TFDjD2EBOy3wX-A_0y-fFeN2"; // ⚠️ Asegurate que sea la correcta de tu panel
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DB = {
+  // Retorna el cliente crudo por si se requiere estructuración avanzada
+  client() {
+    return supabaseClient;
+  },
 
   /* =========================
-     PRODUCTOS
+      PRODUCTOS
   ========================= */
-
   async getProductos() {
     const { data, error } = await supabaseClient
       .from("productos")
-      .select("*");
+      .select("*")
+      .order("id", { ascending: true });
 
     if (error) {
       console.error("Error productos:", error);
       return [];
     }
-
-    return data;
+    return data || [];
   },
 
-  async saveProductos(productos) {
-    const { error } = await supabaseClient
+  async saveProductos(producto) {
+    const { data, error } = await supabaseClient
       .from("productos")
-      .upsert(productos);
+      .upsert(producto);
 
     if (error) {
       console.error("Error guardando productos:", error);
+      throw error;
     }
+    return data;
   },
 
   /* =========================
-     VENTAS
+      VENTAS
   ========================= */
-
   async getVentas() {
     const { data, error } = await supabaseClient
       .from("ventas")
@@ -49,8 +50,7 @@ const DB = {
       console.error("Error ventas:", error);
       return [];
     }
-
-    return data;
+    return data || [];
   },
 
   async saveVenta(venta) {
@@ -60,13 +60,13 @@ const DB = {
 
     if (error) {
       console.error("Error guardando venta:", error);
+      throw error;
     }
   },
 
   /* =========================
-     MOVIMIENTOS
+      MOVIMIENTOS
   ========================= */
-
   async getMovimientos() {
     const { data, error } = await supabaseClient
       .from("movimientos")
@@ -77,8 +77,7 @@ const DB = {
       console.error("Error movimientos:", error);
       return [];
     }
-
-    return data;
+    return data || [];
   },
 
   async saveMovimiento(mov) {
@@ -88,6 +87,7 @@ const DB = {
 
     if (error) {
       console.error("Error guardando movimiento:", error);
+      throw error;
     }
   }
 };

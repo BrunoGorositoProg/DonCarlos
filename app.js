@@ -84,28 +84,54 @@ function renderCarrito() {
   let total = 0;
   let totalItems = 0;
 
-  carrito.forEach((p, index) => {
-    total += p.precio * p.cantidad;
-    totalItems += p.cantidad;
+carrito.forEach((p, index) => {
+  const subtotalProducto = p.precio * p.cantidad;
 
-    const div = document.createElement("div");
-    div.classList.add("cart-item");
+  total += subtotalProducto;
+  totalItems += p.cantidad;
 
-    div.innerHTML = `
-      <div>
-        <strong>${p.nombre}</strong>
-        <p>$${p.precio} x ${p.cantidad}</p>
+  const div = document.createElement("div");
+  div.classList.add("cart-item");
+
+  div.innerHTML = `
+    <img class="cart-item-img" src="${p.imagen}" alt="${p.nombre}">
+
+    <div class="cart-item-info">
+
+      <div class="cart-item-top">
+        <div>
+          <div class="cart-item-title">${p.nombre}</div>
+          <div class="cart-item-price">
+            $${p.precio.toLocaleString()} /kg
+          </div>
+        </div>
+
+        <div class="cart-item-total">
+          $${subtotalProducto.toLocaleString()}
+        </div>
       </div>
 
-      <div>
-        <button onclick="sumar(${index})">+</button>
-        <button onclick="restar(${index})">-</button>
-        <span onclick="eliminar(${index})">❌</span>
-      </div>
-    `;
+      <div class="cart-item-bottom">
 
-    cartItems.appendChild(div);
-  });
+        <div class="cart-controls">
+          <button onclick="restar(${index})">−</button>
+
+          <span>${p.cantidad}</span>
+
+          <button onclick="sumar(${index})">+</button>
+        </div>
+
+        <span class="remove" onclick="eliminar(${index})">
+          🗑️
+        </span>
+
+      </div>
+
+    </div>
+  `;
+
+  cartItems.appendChild(div);
+});
 
   subtotalEl.textContent = "Total: $" + total;
   document.getElementById("cart-count").textContent = totalItems;

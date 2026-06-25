@@ -104,7 +104,7 @@ carrito.forEach((p, index) => {
         <div>
           <div class="cart-item-title">${p.nombre}</div>
           <div class="cart-item-price">
-            $${p.precio.toLocaleString()} /kg
+            $${p.precio.toLocaleString()} 
           </div>
         </div>
 

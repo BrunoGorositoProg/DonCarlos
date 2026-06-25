@@ -511,6 +511,17 @@ header {
   font-size: 14px;
   color: #444;
 }
+.especial-presentation {
+  margin-top: 8px;
+  font-size: 15px;
+  color: #0f0f0f;
+}
+.optional-info {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #0f0f0f;
+}
 
 /* ==================================================
    ANIMACIONES

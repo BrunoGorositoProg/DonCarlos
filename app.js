@@ -30,6 +30,8 @@ function renderProductos() {
       <h3 class="titulo">${prod.nombre}</h3>
       <p class="desc">${prod.descripcion || ""}</p>
       <p class="desc">${prod.presentacion || ""}</p>
+      <p class="especial-presentation">${prod.EspecialPresentation || ""}</p>
+      <h2 class="optional-info">${prod.OptionalInfo || ""}</h2>
       <div class="card-footer">
         <span class="precio">$${prod.precio}</span>
         <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>

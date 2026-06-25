@@ -143,7 +143,7 @@ document.getElementById("enviarPedido").onclick = () => {
     return;
   }
 
-  let mensaje = "*Don Carlos*\n\n🛒 Pedido:\n";
+  let mensaje = "*Don Carlos*\n\n 🛒Pedido:\n";
 
   carrito.forEach(p => {
     mensaje += `• ${p.nombre} x${p.cantidad}\n`;
@@ -151,7 +151,7 @@ document.getElementById("enviarPedido").onclick = () => {
 
   const total = carrito.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
 
-  mensaje += `\n💰 Total: $${total}`;
+  mensaje += `\nTotal: $${total}`;
 
   const url = `https://wa.me/5493492642222?text=${encodeURIComponent(mensaje)}`;
   window.open(url);
